@@ -1,0 +1,15 @@
+{
+  "shape": [
+    64,
+    64,
+    64
+  ],
+  "block_size": 32,
+  "stride": 32,
+  "n_starts": 8,
+  "train_val_test": [
+    5,
+    1,
+    2
+  ]
+}
