@@ -7,9 +7,12 @@
   "block_size": 32,
   "stride": 32,
   "n_starts": 8,
+  "mode": "ab",
   "train_val_test": [
     5,
-    1,
-    2
-  ]
+    3,
+    0
+  ],
+  "holdout_frac": 0.25,
+  "split_x": 48
 }
