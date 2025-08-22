@@ -6,7 +6,7 @@ from src.utils.seeding import seed_all
 from src.utils.logging import get_logger
 from src.dataio.hit_dataset import HITDataset
 from src.models.unet3d import UNet3D
-from src.eval.evaluate import evaluate_model
+from src.eval.evaluator import evaluate_baseline
 from src.eval.temp_scaling import TemperatureScaler
 from src.eval.conformal import conformal_wrap
 
@@ -19,11 +19,13 @@ def main(cfg_path, seed, mc_samples, temperature_scale, conformal):
   mcfg=cfg['model']; net=UNet3D(mcfg['in_channels'], mcfg['out_channels'], base_ch=mcfg['base_channels'])
   state=torch.load(ckpt, map_location='cpu'); net.load_state_dict(state['model'])
   if cfg['uq'].get('method','none')=='mc_dropout': net.enable_mc_dropout(p=cfg['uq'].get('dropout_p',0.2))
-  net=net.cuda() if torch.cuda.is_available() else net; log.info(f'Loaded {ckpt.name}')
-  e=dict(mc_samples=mc_samples or cfg['eval'].get('mc_samples',32))
-  if temperature_scale: from src.eval.temp_scaling import TemperatureScaler; t=TemperatureScaler().fit(vl, net, log); e['temperature']=float(t)
-  evaluate_model(cfg, net, vl, out, split='val', **e); evaluate_model(cfg, net, tl, out, split='test', **e)
-  if conformal: conformal_wrap(cfg, out, log)
+  device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+  net = net.to(device)
+  log.info(f'Loaded {ckpt.name}')
+  val_metrics = evaluate_baseline(net, vl, device)
+  print(f"VAL RMSE: {val_metrics['rmse']:.4f}, MAE: {val_metrics['mae']:.4f}")
+  test_metrics = evaluate_baseline(net, tl, device)
+  print(f"TEST RMSE: {test_metrics['rmse']:.4f}, MAE: {test_metrics['mae']:.4f}")
 
 if __name__=='__main__':
   ap=argparse.ArgumentParser(); ap.add_argument('--config',required=True); ap.add_argument('--seed',type=int,default=None)
