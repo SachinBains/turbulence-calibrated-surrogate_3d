@@ -2,3 +2,5 @@ config,seed,results_dir
 configs\E2_hit_bayes.yaml,1,results\E2_hit_bayes
 configs\E1_hit_baseline.yaml,42,results\E1_hit_baseline
 configs\E2_hit_bayes.yaml,1,results\E2_hit_bayes
+configs/E1_hit_baseline_32_smoke.yaml,42,results\E1_hit_baseline_32_smoke
+configs/E1_hit_baseline_32_smoke.yaml,42,results\E1_hit_baseline_32_smoke
