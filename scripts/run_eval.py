@@ -22,9 +22,9 @@ def main(cfg_path, seed, mc_samples, temperature_scale, conformal):
   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
   net = net.to(device)
   log.info(f'Loaded {ckpt.name}')
-  val_metrics = evaluate_baseline(net, vl, device)
+  val_metrics = evaluate_baseline(net, vl, device, save_dir=out, cfg=cfg)
   print(f"VAL RMSE: {val_metrics['rmse']:.4f}, MAE: {val_metrics['mae']:.4f}")
-  test_metrics = evaluate_baseline(net, tl, device)
+  test_metrics = evaluate_baseline(net, tl, device, save_dir=out, cfg=cfg)
   print(f"TEST RMSE: {test_metrics['rmse']:.4f}, MAE: {test_metrics['mae']:.4f}")
 
 if __name__=='__main__':
