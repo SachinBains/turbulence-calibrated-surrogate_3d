@@ -1,0 +1,7 @@
+{
+  "git_hash": "66eeff46b98d91125ae75e1a53e831349f426043",
+  "seed": 42,
+  "cmd": "C:\\Users\\Sachi\\OneDrive\\Desktop\\Dissertation\\turbulence-calibrated-surrogate_full\\scripts\\run_train.py --config configs/E1_hit_baseline_32_smoke.yaml",
+  "config": "configs/E1_hit_baseline_32_smoke.yaml",
+  "resume": null
+}

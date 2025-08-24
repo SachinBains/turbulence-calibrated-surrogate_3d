@@ -24,20 +24,21 @@ def evaluate_baseline(model, loader, device, save_dir=None, cfg=None):
             nvox += y.numel()
     rmse = math.sqrt(mse_sum / nvox)
     mae  = mae_sum / nvox
-    # Save central slice PNG
+    # Save 3-panel central slice PNG
     if save_dir is not None and first_pred is not None and first_y is not None:
         out_dir = os.path.join('figures', cfg['experiment_id'] if cfg and 'experiment_id' in cfg else 'baseline')
         os.makedirs(out_dir, exist_ok=True)
         yp = first_pred[0,0] if first_pred.shape[1] == 1 else first_pred[0]
         yt = first_y[0,0] if first_y.shape[1] == 1 else first_y[0]
+        err = np.abs(yp - yt)
         c = yp.shape[-1] // 2
-        plt.figure(figsize=(8,4))
-        plt.subplot(1,2,1)
-        plt.imshow(yt[...,c], cmap='viridis')
-        plt.title('True')
-        plt.subplot(1,2,2)
-        plt.imshow(yp[...,c], cmap='viridis')
-        plt.title('Pred')
+        plt.figure(figsize=(12,4))
+        plt.subplot(1,3,1)
+        plt.imshow(yt[...,c], cmap='viridis'); plt.title('True')
+        plt.subplot(1,3,2)
+        plt.imshow(yp[...,c], cmap='viridis'); plt.title('Pred')
+        plt.subplot(1,3,3)
+        plt.imshow(err[...,c], cmap='magma'); plt.title('|Error|')
         plt.tight_layout()
         plt.savefig(os.path.join(out_dir, 'central_slice.png'))
         plt.close()

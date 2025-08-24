@@ -15,9 +15,13 @@ def main(cfg_path, seed, mc_samples, temperature_scale, conformal):
   exp_id=cfg.get('experiment_id','EXPERIMENT'); out=Path(cfg['paths']['results_dir'])/exp_id; out.mkdir(parents=True,exist_ok=True)
   val=HITDataset(cfg,'val',eval_mode=True); test=HITDataset(cfg,'test',eval_mode=True)
   vl=DataLoader(val,batch_size=1,shuffle=False); tl=DataLoader(test,batch_size=1,shuffle=False)
-  ckpt=sorted(out.glob('best_*.pth')); assert ckpt, f'No checkpoint in {out}'; ckpt=ckpt[-1]
-  mcfg=cfg['model']; net=UNet3D(mcfg['in_channels'], mcfg['out_channels'], base_ch=mcfg['base_channels'])
-  state=torch.load(ckpt, map_location='cpu'); net.load_state_dict(state['model'])
+  # Load best checkpoint (*.pth) by default
+  best_ckpts = sorted(out.glob('best_*.pth'))
+  assert best_ckpts, f'No checkpoint in {out}'
+  ckpt = best_ckpts[-1]
+  mcfg = cfg['model']
+  net = UNet3D(mcfg['in_channels'], mcfg['out_channels'], base_ch=mcfg['base_channels'])
+  state = torch.load(ckpt, map_location='cpu'); net.load_state_dict(state['model'])
   if cfg['uq'].get('method','none')=='mc_dropout': net.enable_mc_dropout(p=cfg['uq'].get('dropout_p',0.2))
   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
   net = net.to(device)
