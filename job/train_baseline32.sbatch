@@ -5,13 +5,23 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
 #SBATCH --time=06:00:00
-#SBATCH --output=logs/slurm/%x-%j.out
+#SBATCH --output=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_full/logs/slurm/%x-%j.out
+#SBATCH --error=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_full/logs/slurm/%x-%j.err
 
 set -euo pipefail
 
 module purge
 source ~/.bashrc
-conda activate turbml   # <-- replace with your env name if different
+# Try to activate conda env, print warning if missing
+if ! command -v conda &> /dev/null; then
+  echo "[ERROR] conda not found in PATH. Please check your environment setup." >&2
+  exit 1
+fi
+
+if ! conda activate turbml 2>/dev/null; then
+  echo "[ERROR] conda env 'turbml' not found or failed to activate." >&2
+  exit 1
+fi
 
 cd /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_full
 
