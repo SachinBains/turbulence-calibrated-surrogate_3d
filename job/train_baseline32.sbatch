@@ -1,20 +1,19 @@
 #!/bin/bash
 #SBATCH --job-name=baseline32
-#SBATCH --output=logs/slurm/baseline32_%j.out
-#SBATCH --error=logs/slurm/baseline32_%j.err
-#SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=6
-#SBATCH --mem=24G
+#SBATCH --partition=gpuV
+#SBATCH --gres=gpu:v100:1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
 #SBATCH --time=06:00:00
+#SBATCH --output=logs/slurm/%x-%j.out
 
-set -e
+set -euo pipefail
 
-module load cuda/11.7 || true  # Adjust as needed for your cluster
+module purge
+source ~/.bashrc
+conda activate turbml   # <-- replace with your env name if different
 
-# Activate your environment if needed
-# source ~/envs/yourenv/bin/activate
+cd /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_full
 
-export OMP_NUM_THREADS=6
-
-srun python -m scripts.run_train --config configs/E1_hit_baseline.yaml
-srun python -m scripts.run_eval --config configs/E1_hit_baseline.yaml
+python -m scripts.run_train --config configs/E1_hit_baseline.yaml
+python -m scripts.run_eval  --config configs/E1_hit_baseline.yaml
