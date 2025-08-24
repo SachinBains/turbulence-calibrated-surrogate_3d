@@ -10,21 +10,20 @@
 
 set -euo pipefail
 
-module purge
-export BASHRCSOURCED=1
-source ~/.bashrc
-# Try to activate conda env, print warning if missing
-if ! command -v conda &> /dev/null; then
-  echo "[ERROR] conda not found in PATH. Please check your environment setup." >&2
-  exit 1
-fi
+# --- activate Python venv (no conda needed) ---
+source ~/venvs/turbml/bin/activate
 
-if ! conda activate turbml 2>/dev/null; then
-  echo "[ERROR] conda env 'turbml' not found or failed to activate." >&2
-  exit 1
-fi
-
+# --- go to repo root ---
 cd /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_full
+mkdir -p logs/slurm
 
+# --- quick env printouts ---
+echo "WHOAMI=$(whoami)"
+echo "HOST=$(hostname)"
+echo "PYTHON=$(which python)"
+python -c "import sys, torch; print('Py', sys.version); print('CUDA avail:', torch.cuda.is_available())"
+
+# --- run training then evaluation ---
 python -m scripts.run_train --config configs/E1_hit_baseline.yaml
 python -m scripts.run_eval  --config configs/E1_hit_baseline.yaml
+
