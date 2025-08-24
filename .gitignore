@@ -1,0 +1,25 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.so
+.venv/
+venv/
+.env
+.ipynb_checkpoints/
+
+# Project artifacts (DO NOT COMMIT)
+results/
+figures/
+logs/
+**/slurm/*.out
+**/slurm/*.err
+*.pth
+*.pt
+*.npz
+*.npy
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+*.swp
