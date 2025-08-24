@@ -11,6 +11,7 @@
 set -euo pipefail
 
 module purge
+export BASHRCSOURCED=1
 source ~/.bashrc
 # Try to activate conda env, print warning if missing
 if ! command -v conda &> /dev/null; then
