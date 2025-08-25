@@ -29,10 +29,10 @@ def build_model(cfg, device):
     m = cfg['model']
     p = cfg.get('uq', {}).get('dropout_p', 0.0)
     net = UNet3D(
-        in_channels=m['in_channels'],
-        out_channels=m['out_channels'],
-        base_ch=m['base_channels'],
-        dropout=p,
+        m['in_channels'],
+        m['out_channels'],
+        m['base_channels'],
+        p,
     ).to(device)
     return net
 
@@ -60,18 +60,17 @@ def save_metrics(figdir, resdir, split, y_true, mu, var):
 
     rmse = float(np.sqrt(((y_true - mu) ** 2).mean()))
     nll  = gaussian_nll(y_true, mu, var)
-    covs = gaussian_coverage(y_true, mu, var, levels=(0.8, 0.9, 0.95))
-    avg_sigma = float(np.sqrt(var).mean())
-
-    metrics = {'rmse_vs_mu': rmse, 'nll': nll, 'avg_sigma': avg_sigma}
-    metrics.update(covs)
+    metrics = {'rmse_vs_mu': float(rmse), 'nll': float(nll), 'avg_sigma': float(np.sqrt(var).mean())}
+    metrics['cov80'] = float(gaussian_coverage(y_true, mu, var, 0.8))
+    metrics['cov90'] = float(gaussian_coverage(y_true, mu, var, 0.9))
+    metrics['cov95'] = float(gaussian_coverage(y_true, mu, var, 0.95))
 
     with open(os.path.join(resdir, f'mc_metrics_{split}.json'), 'w') as f:
         json.dump(metrics, f, indent=2)
 
     # simple calibration plot
     xs = np.array([80, 90, 95])
-    ys = np.array([metrics['coverage_80']*100, metrics['coverage_90']*100, metrics['coverage_95']*100])
+    ys = np.array([metrics['cov80']*100, metrics['cov90']*100, metrics['cov95']*100])
     plt.figure()
     plt.plot(xs, xs, '--', label='ideal')
     plt.plot(xs, ys, 'o-', label='empirical')
@@ -112,8 +111,7 @@ def main():
     T = args.T if args.T is not None else int(cfg['eval'].get('mc_samples', 20))
 
     # MC predict
-    out = mc_predict(model, loader, device, T=T)
-    mu, var = out['mu'], out['var']
+    mu, var, _ = mc_predict(model, loader, device, T=T)
 
     # Save arrays
     np.save(os.path.join(resdir, f'mc_mean_{args.split}.npy'), mu)
@@ -124,11 +122,11 @@ def main():
     metrics = save_metrics(figdir, resdir, args.split, y_true, mu, var)
 
     print(f"[MC] split={args.split} T={T} | "
-          f"RMSE_vs_mu={metrics['rmse_vs_mu']:.4f}  "
+          f"RMSE={metrics['rmse_vs_mu']:.4f}  "
           f"NLL={metrics['nll']:.4f}  "
-          f"Cov80={metrics['coverage_80']:.3f}  "
-          f"Cov90={metrics['coverage_90']:.3f}  "
-          f"Cov95={metrics['coverage_95']:.3f}  "
+          f"Cov80={metrics['cov80']:.3f}  "
+          f"Cov90={metrics['cov90']:.3f}  "
+          f"Cov95={metrics['cov95']:.3f}  "
           f"avg_sigma={metrics['avg_sigma']:.4f}")
 
 if __name__ == '__main__':
