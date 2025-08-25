@@ -162,9 +162,34 @@ class HITDataset(Dataset):
     elif self.prs.ndim==3: self.prs=self.prs[...,None]
     elif self.prs.ndim==4 and self.prs.shape[0]==1: self.prs=np.moveaxis(self.prs,0,-1)
     else: raise ValueError(f'Unexpected pressure shape {self.prs.shape}')
-    sdir=Path(p['splits_dir']); idx=np.load(sdir/f'hit_{split}_idx.npy'); meta=json.load(open(sdir/'meta.json'))
+    
+    # Support split tags (e.g. 'ab' for A→B)
+    tag = cfg.get('splits', {}).get('tag', '').strip()
+    sdir=Path(p['splits_dir']); meta=json.load(open(sdir/'meta.json'))
+    
+    def idx_name(split):
+        return f"hit_{tag+'_' if tag else ''}{split}_idx.npy"
+    
+    # Load index with explicit check
+    idx_path = sdir / idx_name(split)
+    if not idx_path.exists():
+        raise FileNotFoundError(f"Missing split file: {idx_path}")
+    idx = np.load(idx_path)
+    
     self.block=int(d['block_size']); self.starts=self._starts(meta)[idx]; self.eval_mode=eval_mode; self.eval_stride=int(d.get('eval_stride',1))
-    t_idx=np.load(sdir/'hit_train_idx.npy'); self.stats=self._stats(self._starts(meta)[t_idx])
+    
+    # For validation in A→B, fall back gracefully if ab_val missing
+    if tag == 'ab' and split == 'val':
+        try:
+            t_idx_path = sdir / idx_name('train')
+            t_idx = np.load(t_idx_path)
+        except FileNotFoundError:
+            t_idx_path = sdir / 'hit_train_idx.npy'
+            t_idx = np.load(t_idx_path)
+    else:
+        t_idx = np.load(sdir / idx_name('train'))
+    
+    self.stats=self._stats(self._starts(meta)[t_idx])
   def _starts(self, meta):
     nx,ny,nz=meta['shape']; b=meta['block_size']; s=meta['stride']
     xs=range(0,nx-b+1,s); ys=range(0,ny-b+1,s); zs=range(0,nz-b+1,s)
