@@ -50,6 +50,13 @@ def make_ab_splits(shape, block_size, stride, holdout_frac=0.25):
   region_a_starts = np.array(region_a_starts, dtype=np.int32)
   region_b_starts = np.array(region_b_starts, dtype=np.int32)
   
+  # If no cubes in region B (can happen with small domains),
+  # move some cubes from region A to region B
+  if len(region_b_starts) == 0:
+    # Move last few cubes to test set
+    region_b_starts = region_a_starts[-2:]  # Last 2 cubes for test
+    region_a_starts = region_a_starts[:-2]  # Remaining cubes for train/val
+  
   # Split Region A into train/val (70%/30% of Region A)
   np.random.seed(42)  # Fixed seed for reproducibility
   np.random.shuffle(region_a_starts)
