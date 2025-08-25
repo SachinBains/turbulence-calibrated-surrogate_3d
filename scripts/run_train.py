@@ -34,11 +34,12 @@ def main(cfg_path, seed, resume):
 
     from src.models.unet3d import UNet3D
     net = UNet3D(
-        in_channels=mcfg['in_channels'],
-        out_channels=mcfg['out_channels'],
-        base_ch=mcfg['base_channels'],
-        dropout=dropout_p,
+        mcfg['in_channels'],
+        mcfg['out_channels'],
+        mcfg['base_channels'],
+        dropout_p,
     )
+
     if cfg['uq'].get('method', 'none') == 'mc_dropout':
         net.enable_mc_dropout(p=cfg['uq'].get('dropout_p', 0.2))
     net = net.cuda() if torch.cuda.is_available() else net

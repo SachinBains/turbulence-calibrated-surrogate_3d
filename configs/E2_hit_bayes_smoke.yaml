@@ -1,0 +1,54 @@
+experiment_id: E2_hit_bayes_smoke
+seed: 42
+
+paths:
+  data_root: data/raw/hit
+  velocity_h5: data/raw/hit/hit_velocity.h5
+  pressure_h5: data/raw/hit/hit_pressure.h5
+  splits_dir: splits
+  results_dir: results
+  experiments_manifest: experiments/manifest.csv
+
+data:
+  velocity_key: Velocity_0001
+  pressure_key: Pressure_0001
+  input_fields: [velocity]
+  target_fields: [pressure]
+  block_size: 32
+  stride: 32
+  normalisation: per_channel_z
+  eval_stride: 1
+
+splits:
+  strategy: contiguous_xyz
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+
+model:
+  backbone: unet3d
+  in_channels: 3
+  out_channels: 1
+  base_channels: 32
+
+uq:
+  method: mc_dropout
+  dropout_p: 0.20
+  ensemble_members: 0
+
+train:
+  loss: mse
+  epochs: 1            # smoke run (fast)
+  batch_size: 1
+  num_workers: 0       # safer on Windows + h5py
+  lr: 3.0e-4
+  weight_decay: 1.0e-2
+  amp: false
+  early_stop_patience: 2
+  save_every: 1
+
+eval:
+  mc_samples: 8
+  metrics: [rmse, mae]
+  save_predictions: true
+
