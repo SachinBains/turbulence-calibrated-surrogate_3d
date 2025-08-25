@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 __pycache__/
 *.py[cod]
 *.pyo
@@ -8,7 +8,7 @@ venv/
 .env
 .ipynb_checkpoints/
 
-# Project artifacts (DO NOT COMMIT)
+# Experiment artifacts
 results/
 figures/
 logs/

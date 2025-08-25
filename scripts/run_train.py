@@ -28,8 +28,17 @@ def main(cfg_path, seed, resume):
     va = HITDataset(cfg, 'val')
     tl = DataLoader(tr, batch_size=cfg['train']['batch_size'], shuffle=True, num_workers=cfg['train']['num_workers'])
     vl = DataLoader(va, batch_size=1, shuffle=False, num_workers=cfg['train']['num_workers'])
+    # --- Build model ---
     mcfg = cfg['model']
-    net = UNet3D(mcfg['in_channels'], mcfg['out_channels'], base_ch=mcfg['base_channels'])
+    dropout_p = cfg.get('uq', {}).get('dropout_p', 0.0)
+
+    from src.models.unet3d import UNet3D
+    net = UNet3D(
+        in_channels=mcfg['in_channels'],
+        out_channels=mcfg['out_channels'],
+        base_ch=mcfg['base_channels'],
+        dropout=dropout_p,
+    )
     if cfg['uq'].get('method', 'none') == 'mc_dropout':
         net.enable_mc_dropout(p=cfg['uq'].get('dropout_p', 0.2))
     net = net.cuda() if torch.cuda.is_available() else net
