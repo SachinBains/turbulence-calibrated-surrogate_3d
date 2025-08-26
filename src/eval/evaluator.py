@@ -47,6 +47,6 @@ def evaluate_baseline(model, loader, device, save_dir=None, cfg=None):
         print('Warning: spectral_error requested but not implemented.')
     # Skip UQ metrics if uq.method==none
     if cfg and cfg.get('uq',{}).get('method','none')=='none':
-        return {"rmse": rmse, "mae": mae}
+        return {"rmse": rmse, "mae": mae, "n": nvox}
     # (UQ metrics would go here)
-    return {"rmse": rmse, "mae": mae}
+    return {"rmse": rmse, "mae": mae, "n": nvox}

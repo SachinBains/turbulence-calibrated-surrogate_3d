@@ -1,4 +1,5 @@
 import argparse, torch
+import json
 from pathlib import Path
 from torch.utils.data import DataLoader
 from src.utils.config import load_config
@@ -30,6 +31,13 @@ def main(cfg_path, seed, mc_samples, temperature_scale, conformal):
   print(f"VAL RMSE: {val_metrics['rmse']:.4f}, MAE: {val_metrics['mae']:.4f}")
   test_metrics = evaluate_baseline(net, tl, device, save_dir=out, cfg=cfg)
   print(f"TEST RMSE: {test_metrics['rmse']:.4f}, MAE: {test_metrics['mae']:.4f}")
+  # Save metrics to JSON
+  val_metrics_json = dict(val_metrics, split='val')
+  test_metrics_json = dict(test_metrics, split='test')
+  with open(out / 'val_metrics.json', 'w') as f:
+      json.dump(val_metrics_json, f, indent=2)
+  with open(out / 'test_metrics.json', 'w') as f:
+      json.dump(test_metrics_json, f, indent=2)
 
 if __name__=='__main__':
   ap=argparse.ArgumentParser(); ap.add_argument('--config',required=True); ap.add_argument('--seed',type=int,default=None)
