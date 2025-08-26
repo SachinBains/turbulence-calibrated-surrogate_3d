@@ -41,6 +41,12 @@ def main(cfg_path, seed, mc_samples, temperature_scale, conformal, cuda):
       json.dump(test_metrics_json, f, indent=2)
 
 if __name__=='__main__':
-  ap=argparse.ArgumentParser(); ap.add_argument('--config',required=True); ap.add_argument('--seed',type=int,default=None)
-  ap.add_argument('--mc-samples',type=int,default=None); ap.add_argument('--temperature-scale',action='store_true'); ap.add_argument('--conformal',action='store_true'); ap.add_argument('--cuda',action='store_true',help='use CUDA if available')
-  a=ap.parse_args(); main(a.config,a.seed,a.mc_samples,a.temperature_scale,a.conformal,a.cuda)
+  ap=argparse.ArgumentParser()
+  ap.add_argument('--config', required=True)
+  ap.add_argument('--seed', type=int, default=None)
+  ap.add_argument('--mc-samples', type=int, default=None)
+  ap.add_argument('--temperature-scale', action='store_true')
+  ap.add_argument('--conformal', action='store_true')
+  ap.add_argument('--cuda', action='store_true', help='use CUDA if available')
+  a = ap.parse_args()
+  main(a.config, a.seed, a.mc_samples, a.temperature_scale, a.conformal, a.cuda)
