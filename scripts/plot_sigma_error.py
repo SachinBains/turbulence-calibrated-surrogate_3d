@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from scipy.stats import pearsonr, spearmanr
 import torch
+from src.utils.devices import pick_device
 from src.utils.config import load_config
 from src.dataio.hit_dataset import HITDataset
 from src.models.unet3d import UNet3D
@@ -24,6 +25,7 @@ def main():
     parser.add_argument('--split', default='test')
     parser.add_argument('--T', type=int, default=32)
     parser.add_argument('--max_points', type=int, default=50000)
+    parser.add_argument('--cuda', action='store_true', help='use CUDA if available')
     args = parser.parse_args()
 
     cfg = load_config(args.config)
@@ -38,7 +40,7 @@ def main():
     # If MC files missing, run prediction
     if not mean_path.exists() or not var_path.exists():
         print("MC mean/var not found, running MC prediction...")
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        device = pick_device(args.cuda)
         ds = HITDataset(cfg, args.split, eval_mode=True)
         loader = DataLoader(ds, batch_size=1, shuffle=False)
         mcfg = cfg['model']

@@ -1,5 +1,6 @@
 import argparse, torch
 import json
+from src.utils.devices import pick_device
 from pathlib import Path
 from torch.utils.data import DataLoader
 from src.utils.config import load_config
@@ -11,7 +12,7 @@ from src.eval.evaluator import evaluate_baseline
 from src.eval.temp_scaling import TemperatureScaler
 from src.eval.conformal import conformal_wrap
 
-def main(cfg_path, seed, mc_samples, temperature_scale, conformal):
+def main(cfg_path, seed, mc_samples, temperature_scale, conformal, cuda):
   cfg=load_config(cfg_path); seed_all(seed or cfg.get('seed',42)); log=get_logger()
   exp_id=cfg.get('experiment_id','EXPERIMENT'); out=Path(cfg['paths']['results_dir'])/exp_id; out.mkdir(parents=True,exist_ok=True)
   val=HITDataset(cfg,'val',eval_mode=True); test=HITDataset(cfg,'test',eval_mode=True)
@@ -24,7 +25,7 @@ def main(cfg_path, seed, mc_samples, temperature_scale, conformal):
   net = UNet3D(mcfg['in_channels'], mcfg['out_channels'], base_ch=mcfg['base_channels'])
   state = torch.load(ckpt, map_location='cpu'); net.load_state_dict(state['model'])
   if cfg['uq'].get('method','none')=='mc_dropout': net.enable_mc_dropout(p=cfg['uq'].get('dropout_p',0.2))
-  device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+  device = pick_device(cuda)
   net = net.to(device)
   log.info(f'Loaded {ckpt.name}')
   val_metrics = evaluate_baseline(net, vl, device, save_dir=out, cfg=cfg)
@@ -41,5 +42,5 @@ def main(cfg_path, seed, mc_samples, temperature_scale, conformal):
 
 if __name__=='__main__':
   ap=argparse.ArgumentParser(); ap.add_argument('--config',required=True); ap.add_argument('--seed',type=int,default=None)
-  ap.add_argument('--mc-samples',type=int,default=None); ap.add_argument('--temperature-scale',action='store_true'); ap.add_argument('--conformal',action='store_true')
-  a=ap.parse_args(); main(a.config,a.seed,a.mc_samples,a.temperature_scale,a.conformal)
+  ap.add_argument('--mc-samples',type=int,default=None); ap.add_argument('--temperature-scale',action='store_true'); ap.add_argument('--conformal',action='store_true'); ap.add_argument('--cuda',action='store_true',help='use CUDA if available')
+  a=ap.parse_args(); main(a.config,a.seed,a.mc_samples,a.temperature_scale,a.conformal,a.cuda)

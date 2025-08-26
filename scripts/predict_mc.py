@@ -1,6 +1,7 @@
 import os, glob, json, argparse
 import numpy as np
 import torch
+from src.utils.devices import pick_device
 import yaml
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
@@ -90,10 +91,11 @@ def main():
     ap.add_argument('--config', required=True)
     ap.add_argument('--T', type=int, default=None)
     ap.add_argument('--split', choices=['val','test'], default='test')
+    ap.add_argument('--cuda', action='store_true', help='use CUDA if available')
     args = ap.parse_args()
 
     cfg = load_cfg(args.config)
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = pick_device(args.cuda)
 
     exp = cfg['experiment_id']
     resdir = os.path.join(cfg['paths']['results_dir'], exp)

@@ -5,3 +5,4 @@ h5py
 pyyaml
 scikit-learn
 matplotlib
+tqdm>=4.66

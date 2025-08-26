@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
+from src.utils.devices import pick_device
 from src.utils.config import load_config
 from src.eval.evaluator import evaluate_baseline
 from src.dataio.hit_dataset import HITDataset
@@ -42,7 +43,9 @@ def main():
     parser.add_argument('--ood_base', required=True)
     parser.add_argument('--ood_mc', required=True)
     parser.add_argument('--T', type=int, default=32)
+    parser.add_argument('--cuda', action='store_true', help='use CUDA if available')
     args = parser.parse_args()
+    _ = pick_device(args.cuda)  # for consistency
 
     configs = {
         'ID-BASE': args.id_base,

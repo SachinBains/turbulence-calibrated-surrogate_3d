@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 import torch
+from src.utils.devices import pick_device
 from src.utils.config import load_config
 from src.dataio.hit_dataset import HITDataset
 from src.models.unet3d import UNet3D
@@ -22,6 +23,7 @@ def main():
     parser.add_argument('--index', type=int, default=0)
     parser.add_argument('--axis', choices=['x','y','z'], default='z')
     parser.add_argument('--slice_idx', default='center')
+    parser.add_argument('--cuda', action='store_true', help='use CUDA if available')
     args = parser.parse_args()
 
     cfg = load_config(args.config)
@@ -48,7 +50,7 @@ def main():
         sigma = np.sqrt(np.load(var_path)[args.index,0] if y_true.shape[1]==1 else np.load(var_path)[args.index])
     else:
         # Baseline: run deterministic forward pass
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        device = pick_device(args.cuda)
         loader = DataLoader(ds, batch_size=1, shuffle=False)
         mcfg = cfg['model']
         net = UNet3D(mcfg['in_channels'], mcfg['out_channels'], base_ch=mcfg['base_channels'])

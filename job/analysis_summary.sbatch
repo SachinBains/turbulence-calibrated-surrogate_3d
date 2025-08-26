@@ -9,6 +9,7 @@
 
 set -euo pipefail
 source ~/venvs/turbml/bin/activate
+export CUDA_VISIBLE_DEVICES=""
 cd /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_full
 
 # ensure JSON metrics for baselines
