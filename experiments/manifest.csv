@@ -14,3 +14,7 @@ configs/E2_hit_bayes_smoke.yaml,42,results\E2_hit_bayes_smoke
 configs/E2_hit_bayes_smoke.yaml,42,results\E2_hit_bayes_smoke
 configs/E2_hit_bayes_smoke.yaml,42,results\E2_hit_bayes_smoke
 configs/E2_hit_bayes_smoke.yaml,42,results\E2_hit_bayes_smoke
+configs/E1_hit_baseline.yaml,42,results/E1_hit_baseline
+configs/E2_hit_bayes.yaml,42,results/E2_hit_bayes
+configs/E4_hit_ab_dropout.yaml,42,results/E4_hit_ab_dropout
+configs/E3_hit_ab_baseline.yaml,42,results/E3_hit_ab_baseline
