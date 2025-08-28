@@ -92,6 +92,7 @@ def main():
     ap.add_argument('--T', type=int, default=None)
     ap.add_argument('--split', choices=['val','test'], default='test')
     ap.add_argument('--cuda', action='store_true', help='use CUDA if available')
+    ap.add_argument('--conformal', choices=['absolute', 'scaled'], default=None, help='Apply conformal prediction')
     args = ap.parse_args()
 
     cfg = load_cfg(args.config)
@@ -115,6 +116,30 @@ def main():
     # MC predict
     mu, var, _ = mc_predict(model, loader, device, T=T)
 
+    # Apply conformal prediction if requested
+    if args.conformal:
+        from src.uq.conformal import apply_conformal, compute_coverage_metrics
+        
+        # Load conformal calibration
+        conformal_path = os.path.join(resdir, f'conformal_mc_{args.conformal}.json')
+        if os.path.exists(conformal_path):
+            with open(conformal_path, 'r') as f:
+                conformal_info = json.load(f)
+            
+            q_alpha = conformal_info['q_alpha']
+            base_sigma = np.sqrt(var)
+            
+            # Apply conformal intervals
+            lo, hi = apply_conformal(mu, base_sigma, q_alpha, mode=args.conformal)
+            
+            # Save conformal predictions
+            np.save(os.path.join(resdir, f'mc_conformal_lo_{args.split}.npy'), lo)
+            np.save(os.path.join(resdir, f'mc_conformal_hi_{args.split}.npy'), hi)
+            
+            print(f"Applied conformal prediction ({args.conformal} mode)")
+        else:
+            print(f"Warning: Conformal calibration not found: {conformal_path}")
+
     # Save arrays
     np.save(os.path.join(resdir, f'mc_mean_{args.split}.npy'), mu)
     np.save(os.path.join(resdir, f'mc_var_{args.split}.npy'),  var)
@@ -122,6 +147,19 @@ def main():
     # Ground truth & metrics
     y_true = concat_targets(loader)
     metrics = save_metrics(figdir, resdir, args.split, y_true, mu, var)
+    
+    # Add conformal coverage metrics if applied
+    if args.conformal and 'lo' in locals():
+        from src.uq.conformal import compute_coverage_metrics
+        conformal_metrics = compute_coverage_metrics(y_true, lo, hi)
+        metrics.update({
+            'conformal_coverage': conformal_metrics['coverage'],
+            'conformal_width': conformal_metrics['avg_width']
+        })
+        
+        # Re-save metrics with conformal results
+        with open(os.path.join(resdir, f'mc_metrics_{args.split}.json'), 'w') as f:
+            json.dump(metrics, f, indent=2)
 
     print(f"[MC] split={args.split} T={T} | "
           f"RMSE={metrics['rmse_vs_mu']:.4f}  "
