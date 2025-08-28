@@ -61,7 +61,7 @@ def main(cfg_path, seed, resume, cuda):
     }
     with open(out / "run_info.json", "w") as f:
         json.dump(run_info, f, indent=2)
-    best = train_loop(cfg, net, crit, opt, scaler, tl, vl, out, log, resume_path=resume)
+    best = train_loop(cfg, net, crit, opt, scaler, tl, vl, out, log, resume_path=resume, device=device)
     append_manifest_row(cfg_path, seed_val, str(out))
     log.info(f'Best: {best}')
 

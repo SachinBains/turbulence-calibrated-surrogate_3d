@@ -3,7 +3,7 @@ from statistics import mean
 from pathlib import Path
 def save_ckpt(path, model, epoch, val_loss):
   torch.save({'epoch':epoch,'model':model.state_dict(),'val_loss':float(val_loss)}, path)
-def train_loop(cfg, net, criterion, opt, scaler, train_loader, val_loader, results_dir, logger, resume_path=None):
+def train_loop(cfg, net, criterion, opt, scaler, train_loader, val_loader, results_dir, logger, resume_path=None, device=None):
     import csv, os
     from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
     epochs = cfg['train']['epochs']
@@ -15,6 +15,10 @@ def train_loop(cfg, net, criterion, opt, scaler, train_loader, val_loader, resul
         scheduler = StepLR(opt, step_size=cfg['train'].get('lr_step', 10), gamma=cfg['train'].get('lr_gamma', 0.5))
     best = float('inf'); best_path = None; bad = 0
     start_epoch = 1
+    
+    # Default device handling
+    if device is None:
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # Resume logic
     if resume_path is not None and os.path.exists(resume_path):
         logger.info(f'Resuming from checkpoint: {resume_path}')
@@ -42,8 +46,8 @@ def train_loop(cfg, net, criterion, opt, scaler, train_loader, val_loader, resul
         for ep in range(start_epoch, epochs + 1):
             net.train(); tr = []
             for xb, yb in train_loader:
-                xb = xb.cuda() if torch.cuda.is_available() else xb
-                yb = yb.cuda() if torch.cuda.is_available() else yb
+                xb = xb.to(device)
+                yb = yb.to(device)
                 opt.zero_grad()
                 with torch.cuda.amp.autocast(enabled=cfg['train']['amp'] and torch.cuda.is_available()):
                     pred = net(xb); loss = criterion(pred, yb)
@@ -52,8 +56,8 @@ def train_loop(cfg, net, criterion, opt, scaler, train_loader, val_loader, resul
             net.eval(); vl = []
             with torch.no_grad():
                 for xb, yb in val_loader:
-                    xb = xb.cuda() if torch.cuda.is_available() else xb
-                    yb = yb.cuda() if torch.cuda.is_available() else yb
+                    xb = xb.to(device)
+                    yb = yb.to(device)
                     pred = net(xb); v = criterion(pred, yb); vl.append(float(v.detach().cpu()))
             trm, vam = mean(tr), mean(vl)
             logger.info(f'Epoch {ep:03d} | train {trm:.4f} | val {vam:.4f}')
