@@ -4,6 +4,7 @@ from src.utils.seeding import seed_all
 from src.utils.config import load_config
 from src.utils.logging import get_logger
 from src.utils.manifest import append_manifest_row
+from src.utils.devices import pick_device
 from src.dataio.hit_dataset import HITDataset
 from src.models.unet3d import UNet3D
 from src.train.losses import make_loss
@@ -16,7 +17,7 @@ def get_git_hash():
     except Exception:
         return "unknown"
 
-def main(cfg_path, seed, resume):
+def main(cfg_path, seed, resume, cuda):
     cfg = load_config(cfg_path)
     seed_val = seed or cfg.get('seed', 42)
     seed_all(seed_val)
@@ -42,7 +43,9 @@ def main(cfg_path, seed, resume):
 
     if cfg['uq'].get('method', 'none') == 'mc_dropout':
         net.enable_mc_dropout(p=cfg['uq'].get('dropout_p', 0.2))
-    net = net.cuda() if torch.cuda.is_available() else net
+    
+    device = pick_device(cuda)
+    net = net.to(device)
     crit = make_loss(cfg)
     opt = torch.optim.AdamW(net.parameters(), lr=cfg['train']['lr'], weight_decay=cfg['train']['weight_decay'])
     scaler = torch.cuda.amp.GradScaler(enabled=bool(cfg['train']['amp']))
@@ -67,5 +70,6 @@ if __name__ == '__main__':
     ap.add_argument('--config', required=True)
     ap.add_argument('--seed', type=int, default=None)
     ap.add_argument('--resume', type=str, default=None)
+    ap.add_argument('--cuda', action='store_true', help='use CUDA if available')
     a = ap.parse_args()
-    main(a.config, a.seed, a.resume)
+    main(a.config, a.seed, a.resume, a.cuda)

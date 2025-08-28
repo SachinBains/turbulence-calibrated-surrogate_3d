@@ -13,7 +13,7 @@ data:
   input_fields: [velocity]
   target_fields: [pressure]
   block_size: 32
-  stride: 32
+  stride: 16
   normalisation: per_channel_z
   eval_stride: 1
 splits:
