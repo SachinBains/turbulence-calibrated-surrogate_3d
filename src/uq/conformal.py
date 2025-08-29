@@ -36,7 +36,7 @@ def fit_conformal(residuals, alpha):
     """
     n = len(residuals)
     # Conformal quantile: (n+1)(1-alpha)/n percentile
-    q_level = (n + 1) * (1 - alpha) / n
+    q_level = 1 - alpha
     q_alpha = np.quantile(residuals, q_level)
     
     return q_alpha
