@@ -40,7 +40,7 @@ uq:
 
 train:
   loss: mse
-  epochs: 1
+  epochs: 50
   batch_size: 1
   num_workers: 0
   lr: 3.0e-4
