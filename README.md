@@ -1,6 +1,16 @@
-# Turbulence-Calibrated-Surrogate
+# Turbulence-Calibrated-Surrogate (3D Track)
 
 A comprehensive 3D turbulence surrogate model with advanced uncertainty quantification, physics validation, and interpretability analysis.
+
+> **Note**: This repository is the **3D development track** for complex JHTDB datasets and advanced 3D cube analysis. The baseline 2D HIT work is maintained in the original repository: [turbulence-calibrated-surrogate_full](https://github.com/SachinBains/turbulence-calibrated-surrogate_full).
+
+## 3D Track Overview
+
+This repository extends the baseline turbulence surrogate framework to handle:
+- **3D JHTDB datasets** with complex boundary conditions
+- **Y+ band analysis** for wall-bounded turbulence
+- **Advanced 3D cube processing** with higher resolution
+- **Separate artifact management** under `/artifacts_3d/` structure
 
 ## Features
 

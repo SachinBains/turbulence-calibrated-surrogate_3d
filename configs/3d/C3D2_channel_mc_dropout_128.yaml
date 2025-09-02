@@ -1,0 +1,71 @@
+# C3D2: Channel Flow MC Dropout - 128³ Resolution
+# 3D Track Experiment - MC Dropout for uncertainty quantification
+
+experiment_id: C3D2_channel_mc_dropout_128
+description: "Channel flow MC Dropout model at 128³ resolution"
+
+# Dataset configuration
+dataset:
+  name: channel3d
+  data_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/datasets/channel3d
+  resolution: [128, 128, 128]
+  variables: [u, v, w, p]
+  y_plus_range: [0.5, 1000]
+  normalization: channel_stats
+  
+# Model architecture (3D U-Net with Dropout)
+model:
+  name: unet3d_dropout
+  in_channels: 4
+  out_channels: 4
+  base_channels: 32
+  depth: 4
+  dropout: 0.1  # MC Dropout rate
+  batch_norm: true
+  activation: relu
+  mc_samples: 100  # Number of MC forward passes
+  
+# Training configuration
+training:
+  batch_size: 2
+  epochs: 200
+  learning_rate: 1e-4
+  weight_decay: 1e-4
+  optimizer: adam
+  scheduler: cosine
+  early_stopping:
+    patience: 20
+    min_delta: 1e-6
+    
+# Loss function
+loss:
+  name: mse
+  reduction: mean
+  
+# Data loading
+dataloader:
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  
+# Validation
+validation:
+  frequency: 5
+  metrics: [rmse, mae, r2, nll, coverage]
+  
+# Paths (3D track artifacts)
+paths:
+  artifacts_root: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d
+  results_dir: ${paths.artifacts_root}/results/${experiment_id}
+  checkpoints_dir: ${paths.artifacts_root}/checkpoints/${experiment_id}
+  logs_dir: ${paths.artifacts_root}/logs/training
+  cache_dir: ${paths.artifacts_root}/cache
+  
+# Hardware
+device: cuda
+mixed_precision: true
+gradient_checkpointing: true
+
+# Reproducibility
+seed: 42
+deterministic: true

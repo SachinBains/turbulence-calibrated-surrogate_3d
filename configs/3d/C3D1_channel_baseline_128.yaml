@@ -1,0 +1,70 @@
+# C3D1: Channel Flow Baseline - 128³ Resolution
+# 3D Track Experiment - Baseline deterministic model for channel flow
+
+experiment_id: C3D1_channel_baseline_128
+description: "Channel flow baseline model at 128³ resolution"
+
+# Dataset configuration
+dataset:
+  name: channel3d
+  data_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/datasets/channel3d
+  resolution: [128, 128, 128]
+  variables: [u, v, w, p]  # velocity components + pressure
+  y_plus_range: [0.5, 1000]
+  normalization: channel_stats
+  
+# Model architecture (3D U-Net)
+model:
+  name: unet3d
+  in_channels: 4  # u, v, w, p
+  out_channels: 4
+  base_channels: 32  # Reduced for 3D memory constraints
+  depth: 4
+  dropout: 0.0  # Baseline model - no dropout
+  batch_norm: true
+  activation: relu
+  
+# Training configuration
+training:
+  batch_size: 2  # Small batch for 3D memory constraints
+  epochs: 200
+  learning_rate: 1e-4
+  weight_decay: 1e-4
+  optimizer: adam
+  scheduler: cosine
+  early_stopping:
+    patience: 20
+    min_delta: 1e-6
+    
+# Loss function
+loss:
+  name: mse
+  reduction: mean
+  
+# Data loading
+dataloader:
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  
+# Validation
+validation:
+  frequency: 5  # Every 5 epochs
+  metrics: [rmse, mae, r2]
+  
+# Paths (3D track artifacts)
+paths:
+  artifacts_root: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d
+  results_dir: ${paths.artifacts_root}/results/${experiment_id}
+  checkpoints_dir: ${paths.artifacts_root}/checkpoints/${experiment_id}
+  logs_dir: ${paths.artifacts_root}/logs/training
+  cache_dir: ${paths.artifacts_root}/cache
+  
+# Hardware
+device: cuda
+mixed_precision: true  # Enable for 3D memory efficiency
+gradient_checkpointing: true
+
+# Reproducibility
+seed: 42
+deterministic: true
