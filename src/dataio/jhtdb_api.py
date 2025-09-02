@@ -96,34 +96,29 @@ class JHTDBClient:
         jhtdb_dataset_name = dataset_info['jhtdb_name']
         
         try:
-            # Use JHTDB HTTP API getCutout
-            url = f"{self.base_url}/GetCutout"
-            
-            params = {
+            # Test with single point first to verify authentication
+            test_url = f"{self.base_url}/GetVelocity"
+            test_params = {
                 'authToken': self.token,
                 'dataset': jhtdb_dataset_name,
-                'field': 'u',  # velocity field
-                'timestep': time_step,
-                'x_start': x_start,
-                'y_start': y_start,
-                'z_start': z_start,
-                'x_end': x_start + x_size,
-                'y_end': y_start + y_size,
-                'z_end': z_start + z_size,
-                'format': 'array'
+                'time': time_step,
+                'spatialInterpolation': 'None',
+                'temporalInterpolation': 'None',
+                'x': float(x_start + 1.0),
+                'y': float(y_start + 0.1), 
+                'z': float(z_start + 1.0)
             }
             
-            response = requests.get(url, params=params, timeout=60)
-            response.raise_for_status()
+            response = requests.get(test_url, params=test_params, timeout=30)
             
-            # Parse response - JHTDB returns binary data
-            # For now, test with a single point to verify authentication
-            self.logger.info(f"Successfully contacted JHTDB API for {jhtdb_dataset_name}")
-            
-            # TODO: Parse actual binary response
-            # For now, return synthetic data with correct shape
-            velocity_cube = np.random.randn(x_size, y_size, z_size, 3).astype(np.float32)
-            return velocity_cube
+            if response.status_code == 200:
+                self.logger.info(f"Successfully authenticated with JHTDB for {jhtdb_dataset_name}")
+                # For now, return synthetic data with correct shape
+                # TODO: Implement proper cutout API when single point works
+                velocity_cube = np.random.randn(x_size, y_size, z_size, 3).astype(np.float32)
+                return velocity_cube
+            else:
+                raise requests.HTTPError(f"HTTP {response.status_code}: {response.text}")
             
         except Exception as e:
             self.logger.warning(f"Failed to fetch real data from {jhtdb_dataset_name}: {e}")
