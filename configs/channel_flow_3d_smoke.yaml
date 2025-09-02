@@ -50,8 +50,8 @@ model:
   dropout_rate: 0.1
 
 training:
-  batch_size: 2  # Small batch for memory efficiency
-  num_epochs: 20  # Quick training
+  batch_size: 2  # Reduced for smoke test
+  num_epochs: 30  # Quick validation with sufficient convergenceing
   learning_rate: 1e-3  # Higher LR for faster convergence
   weight_decay: 1e-5
   
@@ -62,7 +62,7 @@ training:
   
   scheduler:
     type: "cosine"
-    T_max: 20
+    T_max: 30
     eta_min: 1e-6
   
   loss:
@@ -74,8 +74,8 @@ training:
   val_frequency: 2
   save_frequency: 5
   early_stopping:
-    patience: 10
-    min_delta: 1e-5
+    patience: 8
+    min_delta: 1e-35
 
 evaluation:
   metrics:

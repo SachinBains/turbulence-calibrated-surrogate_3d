@@ -25,7 +25,7 @@ def main():
     parser.add_argument('--cube_size', nargs=3, type=int, default=[64, 64, 64],
                        help='Size of velocity cubes to download')
     parser.add_argument('--n_cubes', type=int, default=200,
-                       help='Number of cubes for smoke test mode (corrected: 200 cubes = 210MB)')
+                       help='Number of cubes for smoke test mode (corrected: 200 cubes = 630MB)')
     parser.add_argument('--max_cubes_per_band', type=int, default=400,
                        help='Maximum cubes per y+ band for full scale mode (corrected: 400 per band)')
     parser.add_argument('--token', help='JHTDB API token')
@@ -54,8 +54,8 @@ def main():
             cube_size=tuple(args.cube_size),
             n_cubes=args.n_cubes
         )
-        expected_size = len(cube_configs) * (args.cube_size[0]**3 * 3 * 4) / (1024**3)
-        print(f"Expected download size: {expected_size:.1f} GB")
+        expected_size = len(cube_configs) * (args.cube_size[0]**3 * 3 * 4) / (1024**2)
+        print(f"Expected download size: {expected_size:.1f} MB")
         
         print(f"Generated {len(cube_configs)} cube configurations")
         if args.dataset == 'channel_5200':

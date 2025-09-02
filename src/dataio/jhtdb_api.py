@@ -304,7 +304,7 @@ class JHTDBClient:
                 continue
             
             # Sample y positions in this band
-            y_sample = y_indices[::max(1, len(y_indices)//10)]  # Sample 10 positions per band
+            y_sample = y_indices[::max(1, len(y_indices)//8)]  # Sample ~8 positions per band
             
             # Sample time steps (corrected for realistic full-scale)
             if dataset == 'channel_5200':
@@ -312,11 +312,11 @@ class JHTDBClient:
             else:
                 time_steps = np.arange(time_range[0], min(time_range[1], 4000), temporal_stride)  # Every 25th frame
             
-            # Sample spatial positions
+            # Sample spatial positions (reduced to hit 400 cubes per band)
             x_positions = np.arange(cube_size[0]//2, grid_size[0] - cube_size[0]//2, 
-                                   cube_size[0] * spatial_stride)
+                                   cube_size[0] * spatial_stride * 2)  # Increased stride
             z_positions = np.arange(cube_size[2]//2, grid_size[2] - cube_size[2]//2,
-                                   cube_size[2] * spatial_stride)
+                                   cube_size[2] * spatial_stride * 2)  # Increased stride
             
             band_count = 0
             for t in time_steps:
