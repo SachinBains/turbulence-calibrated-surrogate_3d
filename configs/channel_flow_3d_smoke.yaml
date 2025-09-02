@@ -1,0 +1,145 @@
+# Channel Flow 3D Smoke Test Configuration
+# Quick validation setup for JHTDB Channel Flow integration
+
+experiment:
+  name: "channel_flow_3d_smoke"
+  description: "3D Channel Flow Smoke Test - Quick Validation"
+  tags: ["3d", "channel_flow", "jhtdb", "smoke_test"]
+
+dataset:
+  type: "jhtdb_channel"
+  name: "channel"
+  data_dir: "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/data_3d/channel_flow_smoke"
+  
+  # Physics parameters
+  reynolds_tau: 1000
+  channel_height: 2.0
+  domain_size: [25.13, 2.0, 9.42]
+  
+  # Reduced sampling for smoke test
+  cube_size: [64, 64, 64]  # Smaller cubes for faster processing
+  y_plus_bands: 
+    - [1, 15]     # Near-wall
+    - [50, 150]   # Log layer
+    - [200, 500]  # Outer layer
+  
+  temporal_stride: 10  # Larger stride for fewer samples
+  spatial_stride: 2
+  normalize: true
+  cache_data: true  # Cache for smoke test
+  
+  # Data splits
+  train_ratio: 0.6
+  val_ratio: 0.2
+  test_ratio: 0.2
+
+model:
+  type: "unet3d"
+  architecture:
+    in_channels: 3
+    out_channels: 3
+    base_channels: 32  # Reduced for smoke test
+    depth: 3           # Shallower network
+    dropout_rate: 0.1
+    batch_norm: true
+    activation: "relu"
+  
+  # UQ configuration
+  uncertainty_method: "mc_dropout"
+  mc_samples: 10  # Fewer samples for speed
+  dropout_rate: 0.1
+
+training:
+  batch_size: 2  # Small batch for memory efficiency
+  num_epochs: 20  # Quick training
+  learning_rate: 1e-3  # Higher LR for faster convergence
+  weight_decay: 1e-5
+  
+  optimizer:
+    type: "adam"
+    betas: [0.9, 0.999]
+    eps: 1e-8
+  
+  scheduler:
+    type: "cosine"
+    T_max: 20
+    eta_min: 1e-6
+  
+  loss:
+    type: "mse"
+    physics_weight: 0.1
+    divergence_weight: 0.05
+  
+  # Validation
+  val_frequency: 2
+  save_frequency: 5
+  early_stopping:
+    patience: 10
+    min_delta: 1e-5
+
+evaluation:
+  metrics:
+    - "mse"
+    - "mae" 
+    - "rmse"
+    - "physics_mse"
+  
+  # Basic physics validation
+  physics_validation:
+    - "incompressibility"
+    - "energy_spectrum_3d"
+  
+  # Basic UQ evaluation
+  uncertainty_evaluation:
+    - "calibration_curve"
+    - "coverage_analysis"
+
+# Minimal robustness testing
+robustness:
+  cross_validation:
+    n_folds: 3  # Reduced for smoke test
+    stratify_by: "y_plus_band"
+  
+  distribution_shift:
+    target_datasets: ["isotropic1024coarse"]
+    shift_metrics: ["mmd"]
+
+# Output configuration
+output:
+  results_dir: "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results_smoke"
+  figures_dir: "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/figures_smoke" 
+  models_dir: "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/models_smoke"
+  
+  save_predictions: true
+  save_uncertainties: true
+  save_intermediate: false
+  
+  # Basic visualization
+  visualization:
+    slice_plots: true
+    3d_isosurfaces: false  # Skip for smoke test
+    uncertainty_maps: true
+    physics_profiles: true
+
+# Computational configuration
+compute:
+  device: "cuda"
+  mixed_precision: true
+  gradient_clipping: 1.0
+  
+  # Memory optimization
+  gradient_checkpointing: false  # Disable for speed
+  pin_memory: true
+  num_workers: 2  # Reduced workers
+  prefetch_factor: 1
+
+# Logging and monitoring
+logging:
+  level: "INFO"
+  log_dir: "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs_smoke"
+  tensorboard: true
+  wandb: false
+  
+  # Progress tracking
+  log_frequency: 10  # More frequent logging for smoke test
+  image_log_frequency: 100

@@ -1,0 +1,167 @@
+# Channel Flow 3D Configuration
+# JHTDB Channel Flow (Re_tau = 1000) for 3D turbulence surrogate modeling
+
+experiment:
+  name: "channel_flow_3d_baseline"
+  description: "3D Channel Flow Turbulence Surrogate with UQ"
+  tags: ["3d", "channel_flow", "jhtdb", "uq"]
+
+dataset:
+  type: "jhtdb_channel"
+  name: "channel"
+  data_dir: "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/data_3d/channel_flow"
+  
+  # Physics parameters
+  reynolds_tau: 1000
+  channel_height: 2.0
+  domain_size: [25.13, 2.0, 9.42]  # [8π, 2, 3π]
+  
+  # Sampling configuration
+  cube_size: [96, 96, 96]
+  y_plus_bands: 
+    - [1, 5]      # Viscous sublayer
+    - [5, 15]     # Buffer layer
+    - [15, 50]    # Transition
+    - [50, 150]   # Log layer
+    - [150, 500]  # Outer layer
+  
+  temporal_stride: 5
+  spatial_stride: 1
+  normalize: true
+  cache_data: false
+  
+  # Data splits
+  train_ratio: 0.6
+  val_ratio: 0.2
+  test_ratio: 0.2
+
+model:
+  type: "unet3d"
+  architecture:
+    in_channels: 3
+    out_channels: 3
+    base_channels: 64
+    depth: 4
+    dropout_rate: 0.1
+    batch_norm: true
+    activation: "relu"
+  
+  # UQ configuration
+  uncertainty_method: "mc_dropout"
+  mc_samples: 50
+  dropout_rate: 0.1
+
+training:
+  batch_size: 4  # Reduced for 3D data
+  num_epochs: 100
+  learning_rate: 1e-4
+  weight_decay: 1e-5
+  
+  optimizer:
+    type: "adam"
+    betas: [0.9, 0.999]
+    eps: 1e-8
+  
+  scheduler:
+    type: "cosine"
+    T_max: 100
+    eta_min: 1e-6
+  
+  loss:
+    type: "mse"
+    physics_weight: 0.1
+    divergence_weight: 0.05
+  
+  # Validation
+  val_frequency: 5
+  save_frequency: 10
+  early_stopping:
+    patience: 20
+    min_delta: 1e-6
+
+evaluation:
+  metrics:
+    - "mse"
+    - "mae" 
+    - "rmse"
+    - "physics_mse"
+    - "divergence_error"
+    - "energy_spectrum_error"
+    - "reynolds_stress_error"
+  
+  # Physics validation
+  physics_validation:
+    - "incompressibility"
+    - "energy_spectrum_3d"
+    - "reynolds_stress_profiles"
+    - "wall_units_scaling"
+    - "y_plus_stratified_metrics"
+  
+  # UQ evaluation
+  uncertainty_evaluation:
+    - "calibration_curve"
+    - "coverage_analysis"
+    - "uncertainty_correlation"
+    - "y_plus_uncertainty_analysis"
+
+# Robustness evaluation configuration
+robustness:
+  cross_validation:
+    n_folds: 5
+    stratify_by: "y_plus_band"
+  
+  distribution_shift:
+    target_datasets: ["channel5200", "isotropic1024coarse"]
+    shift_metrics: ["mmd", "classifier", "statistical"]
+  
+  adversarial_robustness:
+    attack_types: ["fgsm", "pgd", "physics_aware"]
+    epsilon_values: [0.01, 0.05, 0.1]
+  
+  temporal_consistency:
+    sequence_length: 10
+    temporal_metrics: ["autocorrelation", "spectral", "energy_conservation"]
+  
+  multiscale_physics:
+    scales: ["integral", "inertial", "dissipation"]
+    validation_metrics: ["energy_cascade", "structure_functions", "vorticity_dynamics"]
+
+# Output configuration
+output:
+  results_dir: "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results"
+  figures_dir: "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/figures" 
+  models_dir: "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/models"
+  
+  save_predictions: true
+  save_uncertainties: true
+  save_intermediate: false
+  
+  # Visualization
+  visualization:
+    slice_plots: true
+    3d_isosurfaces: true
+    uncertainty_maps: true
+    physics_profiles: true
+
+# Computational configuration
+compute:
+  device: "cuda"
+  mixed_precision: true
+  gradient_clipping: 1.0
+  
+  # Memory optimization
+  gradient_checkpointing: true
+  pin_memory: true
+  num_workers: 4
+  prefetch_factor: 2
+
+# Logging and monitoring
+logging:
+  level: "INFO"
+  log_dir: "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs"
+  tensorboard: true
+  wandb: false
+  
+  # Progress tracking
+  log_frequency: 100
+  image_log_frequency: 1000
