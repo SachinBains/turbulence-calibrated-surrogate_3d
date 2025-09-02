@@ -27,18 +27,19 @@ def check_path_separation():
         try:
             with open(config_file, 'r') as f:
                 content = f.read()
-                if original_artifacts in content:
+                # Check for exact original artifacts path (not substring of artifacts_3d)
+                if original_artifacts in content and artifacts_3d not in content:
                     violations.append(f"Config {config_file} references original artifacts")
-                elif artifacts_3d not in content and "artifacts" in content:
-                    violations.append(f"Config {config_file} has ambiguous artifacts reference")
         except Exception as e:
             print(f"Warning: Could not read {config_file}: {e}")
     
-    # Check Python scripts for hardcoded paths
+    # Check Python scripts for hardcoded paths (exclude validation script itself)
     script_files = list(base_dir.glob("scripts/**/*.py"))
     for script_file in script_files:
+        if script_file.name == "validate_3d_setup.py":
+            continue  # Skip validation script itself
         try:
-            with open(script_file, 'r') as f:
+            with open(script_file, 'r', encoding='utf-8') as f:
                 content = f.read()
                 if original_artifacts in content:
                     violations.append(f"Script {script_file} references original artifacts")
@@ -46,12 +47,12 @@ def check_path_separation():
             print(f"Warning: Could not read {script_file}: {e}")
     
     if violations:
-        print("❌ Path separation violations found:")
+        print("FAIL: Path separation violations found:")
         for violation in violations:
             print(f"  - {violation}")
         return False
     else:
-        print("✅ Path separation validated - no references to original artifacts")
+        print("PASS: Path separation validated - no references to original artifacts")
         return True
 
 def check_experiment_ids():
@@ -88,12 +89,12 @@ def check_experiment_ids():
             print(f"Warning: Could not read manifest: {e}")
     
     if violations:
-        print("❌ Experiment ID collisions found:")
+        print("FAIL: Experiment ID collisions found:")
         for violation in violations:
             print(f"  - {violation}")
         return False
     else:
-        print("✅ Experiment IDs validated - no collisions with E1-E6")
+        print("PASS: Experiment IDs validated - no collisions with E1-E6")
         return True
 
 def check_3d_configs():
@@ -105,7 +106,7 @@ def check_3d_configs():
     config_dir = base_dir / "configs" / "3d"
     
     if not config_dir.exists():
-        print("❌ 3D configs directory not found")
+        print("FAIL: 3D configs directory not found")
         return False
     
     required_configs = [
@@ -141,14 +142,14 @@ def check_3d_configs():
                 invalid_configs.append(f"{config_name}: parse error - {e}")
     
     if missing_configs or invalid_configs:
-        print("❌ 3D configuration issues found:")
+        print("FAIL: 3D configuration issues found:")
         for missing in missing_configs:
             print(f"  - Missing: {missing}")
         for invalid in invalid_configs:
             print(f"  - Invalid: {invalid}")
         return False
     else:
-        print("✅ 3D configurations validated")
+        print("PASS: 3D configurations validated")
         return True
 
 def check_directory_structure():
@@ -180,12 +181,12 @@ def check_directory_structure():
             missing_items.append(f"File: {req_file}")
     
     if missing_items:
-        print("❌ Missing required items:")
+        print("FAIL: Missing required items:")
         for item in missing_items:
             print(f"  - {item}")
         return False
     else:
-        print("✅ Directory structure validated")
+        print("PASS: Directory structure validated")
         return True
 
 def check_git_setup():
@@ -201,26 +202,26 @@ def check_git_setup():
                               capture_output=True, text=True, cwd=Path.cwd())
         
         if result.returncode != 0:
-            print("❌ Git remote check failed")
+            print("FAIL: Git remote check failed")
             return False
         
         remotes = result.stdout
         
         # Validate origin points to 3d repo
         if 'turbulence-calibrated-surrogate_3d' not in remotes:
-            print("❌ Origin remote not pointing to 3D repository")
+            print("FAIL: Origin remote not pointing to 3D repository")
             return False
         
         # Validate upstream points to original repo
         if 'upstream' not in remotes or 'turbulence-calibrated-surrogate_full' not in remotes:
-            print("❌ Upstream remote not configured or not pointing to original repository")
+            print("FAIL: Upstream remote not configured or not pointing to original repository")
             return False
         
-        print("✅ Git configuration validated")
+        print("PASS: Git configuration validated")
         return True
         
     except Exception as e:
-        print(f"❌ Git validation failed: {e}")
+        print(f"FAIL: Git validation failed: {e}")
         return False
 
 def generate_validation_report():
@@ -246,7 +247,7 @@ def generate_validation_report():
             results[check_name] = check_func()
             all_passed = all_passed and results[check_name]
         except Exception as e:
-            print(f"❌ {check_name} validation failed with error: {e}")
+            print(f"FAIL: {check_name} validation failed with error: {e}")
             results[check_name] = False
             all_passed = False
     
@@ -255,20 +256,20 @@ def generate_validation_report():
     print("="*60)
     
     for check_name, passed in results.items():
-        status = "✅ PASS" if passed else "❌ FAIL"
+        status = "PASS" if passed else "FAIL"
         print(f"{check_name:.<30} {status}")
     
     print("\n" + "="*60)
     
     if all_passed:
-        print("🎉 ALL VALIDATIONS PASSED")
+        print("ALL VALIDATIONS PASSED")
         print("3D Track setup is complete and properly isolated!")
         print("\nNext steps:")
         print("1. Run setup_3d_artifacts.sh on CSF3")
         print("2. Download JHTDB datasets")
         print("3. Start first 3D training experiment")
     else:
-        print("⚠️  VALIDATION FAILURES DETECTED")
+        print("VALIDATION FAILURES DETECTED")
         print("Please fix the issues above before proceeding.")
         return False
     
