@@ -96,33 +96,37 @@ class JHTDBClient:
         jhtdb_dataset_name = dataset_info['jhtdb_name']
         
         try:
-            # Use GetRawVelocity SOAP API for velocity cubes
+            # Use GetCutout SOAP API for velocity cubes (GetRawVelocity is deprecated)
             soap_url = f"{self.base_url}"
             
-            # SOAP envelope for GetRawVelocity
+            # SOAP envelope for GetCutout
             soap_body = f'''<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
                xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
                xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
-    <GetRawVelocity xmlns="http://turbulence.pha.jhu.edu/">
+    <GetCutout xmlns="http://turbulence.pha.jhu.edu/">
       <authToken>{self.token}</authToken>
       <dataset>{jhtdb_dataset_name}</dataset>
-      <T>{time_step}</T>
-      <X>{x_start}</X>
-      <Y>{y_start}</Y>
-      <Z>{z_start}</Z>
-      <Xwidth>{x_size}</Xwidth>
-      <Ywidth>{y_size}</Ywidth>
-      <Zwidth>{z_size}</Zwidth>
-      <addr></addr>
-    </GetRawVelocity>
+      <field>u</field>
+      <timeStep>{time_step}</timeStep>
+      <xStart>{x_start}</xStart>
+      <yStart>{y_start}</yStart>
+      <zStart>{z_start}</zStart>
+      <xEnd>{x_start + x_size}</xEnd>
+      <yEnd>{y_start + y_size}</yEnd>
+      <zEnd>{z_start + z_size}</zEnd>
+      <xStep>1</xStep>
+      <yStep>1</yStep>
+      <zStep>1</zStep>
+      <filterWidth>1</filterWidth>
+    </GetCutout>
   </soap:Body>
 </soap:Envelope>'''
 
             headers = {
                 'Content-Type': 'text/xml; charset=utf-8',
-                'SOAPAction': 'http://turbulence.pha.jhu.edu/GetRawVelocity'
+                'SOAPAction': 'http://turbulence.pha.jhu.edu/GetCutout'
             }
             
             response = requests.post(soap_url, data=soap_body, headers=headers, timeout=60)
@@ -135,9 +139,9 @@ class JHTDBClient:
                 import base64
                 
                 root = ET.fromstring(response.text)
-                # Find the GetRawVelocityResult element
+                # Find the GetCutoutResult element
                 for elem in root.iter():
-                    if 'GetRawVelocityResult' in elem.tag:
+                    if 'GetCutoutResult' in elem.tag:
                         binary_data = base64.b64decode(elem.text)
                         
                         # Convert binary to numpy array
@@ -151,7 +155,7 @@ class JHTDBClient:
                         self.logger.info(f"Real JHTDB cube downloaded: {velocity_cube.shape}")
                         return velocity_cube.astype(np.float32)
                 
-                raise ValueError("Could not parse GetRawVelocityResult from response")
+                raise ValueError("Could not parse GetCutoutResult from response")
             else:
                 raise requests.HTTPError(f"SOAP Error: {response.text[:500]}")
             
