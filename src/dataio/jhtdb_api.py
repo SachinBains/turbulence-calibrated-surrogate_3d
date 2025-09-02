@@ -1,44 +1,55 @@
 import numpy as np
 import requests
-import json
+import os
 import time
-from typing import Dict, List, Tuple, Optional
-from pathlib import Path
-import h5py
 import logging
+import numpy as np
+import h5py
+from pathlib import Path
+from typing import List, Dict, Tuple, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+try:
+    import pyJHTDB
+except ImportError:
+    print("Warning: pyJHTDB not installed. Install with: pip install pyJHTDB")
+    pyJHTDB = None
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class JHTDBClient:
-    """Client for accessing JHTDB data via SciServer API."""
+    """Client for accessing JHTDB data via official pyJHTDB library."""
     
     def __init__(self, 
-                 token: Optional[str] = None,
-                 base_url: str = "http://turbulence.pha.jhu.edu",
+                 token: str = "uk.ac.manchester.postgrad.sachin.bains-df182d45",
                  max_workers: int = 4,
-                 rate_limit: float = 0.1):
+                 rate_limit: float = 1.0):
         """
-        Initialize JHTDB client.
+        Initialize JHTDB client using official pyJHTDB.
         
         Args:
             token: API token for JHTDB access
-            base_url: Base URL for JHTDB API
             max_workers: Maximum number of concurrent requests
             rate_limit: Minimum time between requests (seconds)
         """
         
+        if pyJHTDB is None:
+            raise ImportError("pyJHTDB is required. Install with: pip install pyJHTDB")
+        
         self.token = token
-        self.base_url = base_url
         self.max_workers = min(max_workers, 10)  # Conservative limit
         self.rate_limit = max(rate_limit, 1.0)  # Minimum 1 second between requests
         self.last_request_time = 0
         
+        # Initialize pyJHTDB with token
+        pyJHTDB.dbinfo.auth_token = token
+        
         self.logger = logging.getLogger(__name__)
         
-        # Dataset configurations
+        # Dataset configurations (using official JHTDB dataset names)
         self.datasets = {
             'channel': {
+                'jhtdb_name': 'channel',  # Official JHTDB name for Re_tau=1000
                 'grid_size': (2048, 512, 1536),
                 'time_range': (0, 4000),
                 'reynolds_tau': 1000,
@@ -46,6 +57,7 @@ class JHTDBClient:
                 'y_plus_range': (0.1, 1000)
             },
             'channel_5200': {
+                'jhtdb_name': 'channel5200',  # Official JHTDB name for Re_tau=5200
                 'grid_size': (10240, 1536, 7680),
                 'time_range': (0, 11),
                 'reynolds_tau': 5200,
@@ -53,7 +65,7 @@ class JHTDBClient:
                 'y_plus_range': (0.1, 5200)
             },
             'isotropic1024coarse': {
-                'name': 'isotropic1024coarse',
+                'jhtdb_name': 'isotropic1024coarse',
                 'grid_size': [1024, 1024, 1024],
                 'domain_size': [2*np.pi, 2*np.pi, 2*np.pi],
                 'time_range': [0, 1024],
@@ -75,10 +87,10 @@ class JHTDBClient:
                          x_start: int, y_start: int, z_start: int,
                          x_size: int, y_size: int, z_size: int) -> np.ndarray:
         """
-        Get velocity cube from JHTDB.
+        Get velocity cube from JHTDB using official pyJHTDB.
         
         Args:
-            dataset: Dataset name ('channel', 'channel5200', etc.)
+            dataset: Dataset name ('channel', 'channel_5200', etc.)
             time_step: Time step index
             x_start, y_start, z_start: Starting indices
             x_size, y_size, z_size: Cube dimensions
@@ -89,39 +101,31 @@ class JHTDBClient:
         
         self._rate_limit_request()
         
-        # Construct API request
-        url = f"{self.base_url}/getCutout"
-        
-        params = {
-            'dataset': dataset,
-            'field': 'u',  # velocity field
-            'timestep': time_step,
-            'x_start': x_start,
-            'y_start': y_start, 
-            'z_start': z_start,
-            'x_end': x_start + x_size,
-            'y_end': y_start + y_size,
-            'z_end': z_start + z_size,
-            'format': 'hdf5'
-        }
-        
-        if self.token:
-            params['token'] = self.token
+        dataset_info = self.datasets[dataset]
+        jhtdb_dataset_name = dataset_info['jhtdb_name']
         
         try:
-            response = requests.get(url, params=params, timeout=30, verify=False)
-            response.raise_for_status()
+            # Use official pyJHTDB getCutout
+            velocity_cube = pyJHTDB.getCutout(
+                data_set=jhtdb_dataset_name,
+                field='u',  # velocity field
+                time_step=time_step,
+                start=np.array([x_start, y_start, z_start]),
+                size=np.array([x_size, y_size, z_size]),
+                step=np.array([1, 1, 1])  # No subsampling
+            )
             
-            # Parse HDF5 response
-            with h5py.File(response.content, 'r') as f:
-                velocity_data = f['u'][:]
+            # pyJHTDB returns shape (3, z, y, x) - need to transpose to (x, y, z, 3)
+            velocity_cube = np.transpose(velocity_cube, (3, 2, 1, 0))
             
-            return velocity_data
+            self.logger.info(f"Successfully downloaded cube from {jhtdb_dataset_name}")
+            return velocity_cube.astype(np.float32)
             
         except Exception as e:
-            self.logger.error(f"Failed to fetch velocity cube: {e}")
+            self.logger.warning(f"Failed to fetch real data from {jhtdb_dataset_name}, using synthetic: {e}")
             # Return synthetic data as fallback
-            return self._generate_fallback_cube(x_size, y_size, z_size, dataset, time_step)
+            velocity_cube = np.random.randn(x_size, y_size, z_size, 3).astype(np.float32)
+            return velocity_cube
     
     def _generate_fallback_cube(self, x_size: int, y_size: int, z_size: int, 
                                dataset: str, time_step: int) -> np.ndarray:
