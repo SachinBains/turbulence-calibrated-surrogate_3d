@@ -96,29 +96,46 @@ class JHTDBClient:
         jhtdb_dataset_name = dataset_info['jhtdb_name']
         
         try:
-            # Test with single point first to verify authentication
-            test_url = f"{self.base_url}/GetVelocity"
-            test_params = {
-                'authToken': self.token,
-                'dataset': jhtdb_dataset_name,
-                'time': time_step,
-                'spatialInterpolation': 'None',
-                'temporalInterpolation': 'None',
-                'x': float(x_start + 1.0),
-                'y': float(y_start + 0.1), 
-                'z': float(z_start + 1.0)
+            # JHTDB requires SOAP format - use GetVelocity for single point test
+            soap_url = f"{self.base_url}/GetVelocity"
+            
+            # SOAP envelope for GetVelocity
+            soap_body = f'''<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <GetVelocity xmlns="http://turbulence.pha.jhu.edu/">
+      <authToken>{self.token}</authToken>
+      <dataset>{jhtdb_dataset_name}</dataset>
+      <time>{time_step}</time>
+      <spatialInterpolation>None</spatialInterpolation>
+      <temporalInterpolation>None</temporalInterpolation>
+      <point>
+        <x>{float(x_start + 1.0)}</x>
+        <y>{float(y_start + 0.1)}</y>
+        <z>{float(z_start + 1.0)}</z>
+      </point>
+    </GetVelocity>
+  </soap:Body>
+</soap:Envelope>'''
+
+            headers = {
+                'Content-Type': 'text/xml; charset=utf-8',
+                'SOAPAction': 'http://turbulence.pha.jhu.edu/GetVelocity'
             }
             
-            response = requests.get(test_url, params=test_params, timeout=30)
+            response = requests.post(soap_url, data=soap_body, headers=headers, timeout=30)
             
-            if response.status_code == 200:
+            if response.status_code == 200 and 'soap:Fault' not in response.text:
                 self.logger.info(f"Successfully authenticated with JHTDB for {jhtdb_dataset_name}")
-                # For now, return synthetic data with correct shape
-                # TODO: Implement proper cutout API when single point works
+                self.logger.info(f"Response: {response.text[:200]}...")
+                
+                # For now, return synthetic data until we implement full cutout parsing
                 velocity_cube = np.random.randn(x_size, y_size, z_size, 3).astype(np.float32)
                 return velocity_cube
             else:
-                raise requests.HTTPError(f"HTTP {response.status_code}: {response.text}")
+                raise requests.HTTPError(f"SOAP Error: {response.text[:500]}")
             
         except Exception as e:
             self.logger.warning(f"Failed to fetch real data from {jhtdb_dataset_name}: {e}")
