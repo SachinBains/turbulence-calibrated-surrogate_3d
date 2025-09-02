@@ -96,44 +96,62 @@ class JHTDBClient:
         jhtdb_dataset_name = dataset_info['jhtdb_name']
         
         try:
-            # JHTDB requires SOAP format - use GetVelocity for single point test
-            soap_url = f"{self.base_url}/GetVelocity"
+            # Use GetRawVelocity SOAP API for velocity cubes
+            soap_url = f"{self.base_url}"
             
-            # SOAP envelope for GetVelocity
+            # SOAP envelope for GetRawVelocity
             soap_body = f'''<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
                xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
                xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
-    <GetVelocity xmlns="http://turbulence.pha.jhu.edu/">
+    <GetRawVelocity xmlns="http://turbulence.pha.jhu.edu/">
       <authToken>{self.token}</authToken>
       <dataset>{jhtdb_dataset_name}</dataset>
-      <time>{time_step}</time>
-      <spatialInterpolation>None</spatialInterpolation>
-      <temporalInterpolation>None</temporalInterpolation>
-      <point>
-        <x>{float(x_start + 1.0)}</x>
-        <y>{float(y_start + 0.1)}</y>
-        <z>{float(z_start + 1.0)}</z>
-      </point>
-    </GetVelocity>
+      <T>{time_step}</T>
+      <X>{x_start}</X>
+      <Y>{y_start}</Y>
+      <Z>{z_start}</Z>
+      <Xwidth>{x_size}</Xwidth>
+      <Ywidth>{y_size}</Ywidth>
+      <Zwidth>{z_size}</Zwidth>
+      <addr></addr>
+    </GetRawVelocity>
   </soap:Body>
 </soap:Envelope>'''
 
             headers = {
                 'Content-Type': 'text/xml; charset=utf-8',
-                'SOAPAction': 'http://turbulence.pha.jhu.edu/GetVelocity'
+                'SOAPAction': 'http://turbulence.pha.jhu.edu/GetRawVelocity'
             }
             
-            response = requests.post(soap_url, data=soap_body, headers=headers, timeout=30)
+            response = requests.post(soap_url, data=soap_body, headers=headers, timeout=60)
             
             if response.status_code == 200 and 'soap:Fault' not in response.text:
-                self.logger.info(f"Successfully authenticated with JHTDB for {jhtdb_dataset_name}")
-                self.logger.info(f"Response: {response.text[:200]}...")
+                self.logger.info(f"Successfully downloaded real JHTDB data for {jhtdb_dataset_name}")
                 
-                # For now, return synthetic data until we implement full cutout parsing
-                velocity_cube = np.random.randn(x_size, y_size, z_size, 3).astype(np.float32)
-                return velocity_cube
+                # Parse base64 binary response
+                import xml.etree.ElementTree as ET
+                import base64
+                
+                root = ET.fromstring(response.text)
+                # Find the GetRawVelocityResult element
+                for elem in root.iter():
+                    if 'GetRawVelocityResult' in elem.tag:
+                        binary_data = base64.b64decode(elem.text)
+                        
+                        # Convert binary to numpy array
+                        # JHTDB returns float32 data: 3 components * x_size * y_size * z_size
+                        velocity_data = np.frombuffer(binary_data, dtype=np.float32)
+                        
+                        # Reshape to (3, z_size, y_size, x_size) then transpose to (x_size, y_size, z_size, 3)
+                        velocity_cube = velocity_data.reshape(3, z_size, y_size, x_size)
+                        velocity_cube = np.transpose(velocity_cube, (3, 2, 1, 0))
+                        
+                        self.logger.info(f"Real JHTDB cube downloaded: {velocity_cube.shape}")
+                        return velocity_cube.astype(np.float32)
+                
+                raise ValueError("Could not parse GetRawVelocityResult from response")
             else:
                 raise requests.HTTPError(f"SOAP Error: {response.text[:500]}")
             
