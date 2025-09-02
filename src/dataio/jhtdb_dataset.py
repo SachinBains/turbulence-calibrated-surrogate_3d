@@ -142,7 +142,8 @@ class JHTDBChannelDataset(Dataset):
             for t in time_indices:
                 for x in x_indices:
                     for z in z_indices:
-                        for y in valid_y_indices[::len(valid_y_indices)//min(len(valid_y_indices), 8)]:
+                        step = max(1, len(valid_y_indices)//min(len(valid_y_indices), 8)) if len(valid_y_indices) > 0 else 1
+                        for y in valid_y_indices[::step]:
                             self.sample_indices.append({
                                 'time': t,
                                 'x': x,

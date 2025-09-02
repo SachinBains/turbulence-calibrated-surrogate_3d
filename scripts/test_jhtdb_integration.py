@@ -39,7 +39,7 @@ def test_dataset_creation():
             cache_data=True
         )
         
-        print(f"✓ Dataset created successfully")
+        print(f"Dataset created successfully")
         print(f"  - Number of samples: {len(dataset)}")
         print(f"  - Cube size: {dataset.cube_size}")
         print(f"  - Reynolds tau: {dataset.reynolds_tau}")
@@ -47,27 +47,27 @@ def test_dataset_creation():
         # Test sample loading
         if len(dataset) > 0:
             sample = dataset[0]
-            print(f"✓ Sample loaded successfully")
+            print(f"Sample loaded successfully")
             print(f"  - Velocity shape: {sample['velocity'].shape}")
             print(f"  - Y+ value: {sample['y_plus'].item():.2f}")
             print(f"  - Y+ band: {sample['y_plus_band'].item()}")
             
             # Test physics properties
             physics = dataset.get_physics_properties(0)
-            print(f"✓ Physics properties extracted")
+            print(f"Physics properties extracted")
             print(f"  - Y+ value: {physics['y_plus']:.2f}")
             print(f"  - Grid spacing: {physics['grid_spacing']}")
         
         # Test dataset statistics
         stats = dataset.get_dataset_stats()
-        print(f"✓ Dataset statistics computed")
+        print(f"Dataset statistics computed")
         print(f"  - Y+ range: [{stats['y_plus_range'][0]:.1f}, {stats['y_plus_range'][1]:.1f}]")
         print(f"  - Normalization mean: {stats['normalization_stats']['velocity_mean']}")
         
         return True
         
     except Exception as e:
-        print(f"✗ Dataset test failed: {e}")
+        print(f"X Dataset test failed: {e}")
         return False
     
     finally:
@@ -85,7 +85,7 @@ def test_api_client():
         # Initialize client
         client = JHTDBClient(max_workers=2, rate_limit=0.5)
         
-        print(f"✓ API client created successfully")
+        print(f"API client created successfully")
         
         # Test smoke test configuration
         smoke_config = client.create_smoke_test_config(
@@ -94,7 +94,7 @@ def test_api_client():
             n_cubes=5
         )
         
-        print(f"✓ Smoke test config generated")
+        print(f"Smoke test config generated")
         print(f"  - Number of cubes: {len(smoke_config)}")
         print(f"  - Sample config: {smoke_config[0] if smoke_config else 'None'}")
         
@@ -105,13 +105,13 @@ def test_api_client():
             max_cubes_per_band=10
         )
         
-        print(f"✓ Full scale config generated")
+        print(f"Full scale config generated")
         print(f"  - Number of cubes: {len(full_config)}")
         
         return True
         
     except Exception as e:
-        print(f"✗ API client test failed: {e}")
+        print(f"X API client test failed: {e}")
         return False
 
 def test_dataloader():
@@ -145,14 +145,14 @@ def test_dataloader():
             pin_memory=False
         )
         
-        print(f"✓ DataLoader created successfully")
+        print(f"DataLoader created successfully")
         print(f"  - Batch size: {dataloader.batch_size}")
         print(f"  - Number of batches: {len(dataloader)}")
         
         # Test batch loading
         if len(dataloader) > 0:
             batch = next(iter(dataloader))
-            print(f"✓ Batch loaded successfully")
+            print(f"Batch loaded successfully")
             print(f"  - Velocity batch shape: {batch['velocity'].shape}")
             print(f"  - Y+ batch shape: {batch['y_plus'].shape}")
             print(f"  - Device: {batch['velocity'].device}")
@@ -160,7 +160,7 @@ def test_dataloader():
         return True
         
     except Exception as e:
-        print(f"✗ DataLoader test failed: {e}")
+        print(f"X DataLoader test failed: {e}")
         return False
     
     finally:
@@ -183,7 +183,7 @@ def test_config_loading():
             with open(smoke_config_path, 'r') as f:
                 smoke_config = yaml.safe_load(f)
             
-            print(f"✓ Smoke test config loaded")
+            print(f"Smoke test config loaded")
             print(f"  - Experiment: {smoke_config['experiment']['name']}")
             print(f"  - Dataset: {smoke_config['dataset']['type']}")
             print(f"  - Cube size: {smoke_config['dataset']['cube_size']}")
@@ -194,7 +194,7 @@ def test_config_loading():
             with open(full_config_path, 'r') as f:
                 full_config = yaml.safe_load(f)
             
-            print(f"✓ Full config loaded")
+            print(f"Full config loaded")
             print(f"  - Experiment: {full_config['experiment']['name']}")
             print(f"  - Model: {full_config['model']['type']}")
             print(f"  - UQ method: {full_config['model']['uncertainty_method']}")
@@ -202,7 +202,7 @@ def test_config_loading():
         return True
         
     except Exception as e:
-        print(f"✗ Config loading test failed: {e}")
+        print(f"X Config loading test failed: {e}")
         return False
 
 def main():
@@ -237,16 +237,16 @@ def main():
     total = len(results)
     
     for test_name, result in results.items():
-        status = "✓ PASS" if result else "✗ FAIL"
+        status = "PASS" if result else "X FAIL"
         print(f"  {test_name}: {status}")
     
     print(f"\nOverall: {passed}/{total} tests passed")
     
     if passed == total:
-        print("🎉 All tests passed! JHTDB integration is ready.")
+        print("All tests passed! JHTDB integration is ready.")
         return 0
     else:
-        print("⚠️  Some tests failed. Check the output above.")
+        print("Some tests failed. Check the output above.")
         return 1
 
 if __name__ == '__main__':
