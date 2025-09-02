@@ -1,0 +1,124 @@
+# Channel Flow Re_tau=5200 Configuration for Domain Shift Testing
+# Corrected for realistic JHTDB constraints (11 frames only)
+
+experiment:
+  name: "channel_flow_5200_domain_shift"
+  description: "Channel flow turbulence at Re_tau=5200 for domain shift evaluation"
+  tags: ["3d", "channel", "domain_shift", "high_reynolds"]
+
+dataset:
+  type: "jhtdb_channel"
+  name: "channel_5200"
+  data_dir: "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/data_3d/channel_flow_5200"
+  
+  # Physics parameters
+  reynolds_tau: 5200
+  channel_height: 2.0
+  domain_size: [25.13, 2.0, 9.42]  # [8π, 2, 3π]
+  
+  # Sampling configuration (constrained by 11 frames)
+  cube_size: [96, 96, 96]  # 3D velocity cubes (10.6 MB each)
+  y_plus_bands: [[5, 50], [50, 200], [200, 800], [800, 3000]]  # Higher Re bands
+  temporal_stride: 1   # Use all 11 available frames
+  spatial_stride: 3    # Denser spatial sampling to compensate
+  normalize: true
+  cache_data: false
+  
+  # Data splits (600 total cubes)
+  train_ratio: 0.0     # Zero-shot testing
+  val_ratio: 0.33      # 200 cubes for calibration
+  test_ratio: 0.67     # 400 cubes for zero-shot evaluation
+
+model:
+  type: "unet3d"
+  architecture:
+    in_channels: 3
+    out_channels: 3
+    base_channels: 64
+    depth: 4
+    dropout_rate: 0.1
+    batch_norm: true
+  
+  # UQ configuration
+  uncertainty_method: "mc_dropout"
+  mc_samples: 50
+  dropout_rate: 0.1
+
+training:
+  batch_size: 4  # Same as primary dataset
+  num_epochs: 20   # Reduced for calibration only
+  learning_rate: 1e-5  # Lower LR for fine-tuning
+  weight_decay: 1e-5
+  gradient_clip: 1.0
+  mixed_precision: true
+  gradient_checkpointing: true
+  
+  optimizer:
+    type: "adam"
+    betas: [0.9, 0.999]
+    eps: 1e-8
+  
+  scheduler:
+    type: "cosine"
+    T_max: 20
+    eta_min: 1e-7
+
+evaluation:
+  metrics: ["mse", "mae", "physics_consistency", "uncertainty_calibration"]
+  
+  # Domain shift specific metrics
+  domain_shift:
+    reference_dataset: "channel_flow_1000"
+    metrics: ["distribution_shift", "performance_degradation", "calibration_shift"]
+  
+  # Physics validation for high Reynolds number
+  physics:
+    validate_log_law: true
+    validate_reynolds_stress: true
+    validate_energy_spectrum: true
+    y_plus_range: [1, 5200]
+
+# Robustness evaluation (reduced for domain shift focus)
+robustness:
+  cross_validation:
+    enabled: false  # Not applicable for domain shift
+  
+  distribution_shift:
+    enabled: true
+    reference_data: "/path/to/channel_1000_reference"
+  
+  adversarial_robustness:
+    enabled: true
+    attack_types: ["fgsm", "pgd"]
+    epsilon_values: [0.01, 0.05]
+  
+  temporal_consistency:
+    enabled: false  # Limited by 11 frames
+  
+  physics_validation:
+    enabled: true
+    methods: ["energy_spectrum", "reynolds_stress", "log_law"]
+
+# Output configuration
+output:
+  base_dir: "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d"
+  experiment_dir: "channel_flow_5200"
+  save_predictions: true
+  save_uncertainties: true
+  save_physics_metrics: true
+
+# Compute configuration
+compute:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+
+# Logging
+logging:
+  level: "INFO"
+  log_dir: "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs"
+  tensorboard: true
+  wandb:
+    enabled: false
+    project: "turbulence-3d-domain-shift"

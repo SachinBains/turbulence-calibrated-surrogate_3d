@@ -30,8 +30,8 @@ class JHTDBClient:
         
         self.token = token
         self.base_url = base_url
-        self.max_workers = max_workers
-        self.rate_limit = rate_limit
+        self.max_workers = min(max_workers, 10)  # Conservative limit
+        self.rate_limit = max(rate_limit, 1.0)  # Minimum 1 second between requests
         self.last_request_time = 0
         
         self.logger = logging.getLogger(__name__)
@@ -39,18 +39,18 @@ class JHTDBClient:
         # Dataset configurations
         self.datasets = {
             'channel': {
-                'name': 'channel',
-                'grid_size': [2048, 512, 1536],
-                'domain_size': [8*np.pi, 2.0, 3*np.pi],
-                'time_range': [0, 4000],
-                'reynolds_tau': 1000
+                'grid_size': (2048, 512, 1536),
+                'time_range': (0, 4000),
+                'reynolds_tau': 1000,
+                'domain_size': (8*np.pi, 2, 3*np.pi),
+                'y_plus_range': (0.1, 1000)
             },
-            'channel5200': {
-                'name': 'channel5200', 
-                'grid_size': [8192, 1536, 6144],
-                'domain_size': [8*np.pi, 2.0, 3*np.pi],
-                'time_range': [0, 1000],
-                'reynolds_tau': 5200
+            'channel_5200': {
+                'grid_size': (10240, 1536, 7680),
+                'time_range': (0, 11),
+                'reynolds_tau': 5200,
+                'domain_size': (8*np.pi, 2, 3*np.pi),
+                'y_plus_range': (0.1, 5200)
             },
             'isotropic1024coarse': {
                 'name': 'isotropic1024coarse',
@@ -226,7 +226,7 @@ class JHTDBClient:
     def create_smoke_test_config(self, 
                                 dataset: str = 'channel',
                                 cube_size: Tuple[int, int, int] = (64, 64, 64),
-                                n_cubes: int = 100) -> List[Dict]:
+                                n_cubes: int = 200) -> List[Dict]:
         """Create configuration for smoke test data collection."""
         
         dataset_info = self.datasets[dataset]
@@ -235,9 +235,12 @@ class JHTDBClient:
         
         configs = []
         
-        # Sample time steps
-        time_steps = np.linspace(time_range[0], min(time_range[1], 200), 
-                                min(20, time_range[1] - time_range[0]))
+        # Sample time steps (corrected for realistic smoke test)
+        if dataset == 'channel_5200':
+            time_steps = np.arange(time_range[0], time_range[1])  # All 11 frames
+        else:
+            time_steps = np.linspace(time_range[0], min(time_range[1], 200), 
+                                    min(10, time_range[1] - time_range[0]))  # Reduced for smoke test
         
         # Sample spatial locations
         x_positions = np.linspace(cube_size[0]//2, grid_size[0] - cube_size[0]//2, 5)
@@ -274,10 +277,10 @@ class JHTDBClient:
     def create_full_scale_config(self,
                                 dataset: str = 'channel',
                                 cube_size: Tuple[int, int, int] = (96, 96, 96),
-                                y_plus_bands: List[Tuple[float, float]] = [(1, 5), (5, 15), (15, 50), (50, 150), (150, 500)],
+                                y_plus_bands: List[Tuple[float, float]] = [(5, 30), (30, 100), (100, 300), (300, 800)],
                                 spatial_stride: int = 2,
-                                temporal_stride: int = 5,
-                                max_cubes_per_band: int = 1000) -> List[Dict]:
+                                temporal_stride: int = 25,
+                                max_cubes_per_band: int = 400) -> List[Dict]:
         """Create configuration for full-scale data collection."""
         
         dataset_info = self.datasets[dataset]
@@ -303,8 +306,11 @@ class JHTDBClient:
             # Sample y positions in this band
             y_sample = y_indices[::max(1, len(y_indices)//10)]  # Sample 10 positions per band
             
-            # Sample time steps
-            time_steps = np.arange(time_range[0], min(time_range[1], 1000), temporal_stride)
+            # Sample time steps (corrected for realistic full-scale)
+            if dataset == 'channel_5200':
+                time_steps = np.arange(time_range[0], time_range[1])  # All 11 frames
+            else:
+                time_steps = np.arange(time_range[0], min(time_range[1], 4000), temporal_stride)  # Every 25th frame
             
             # Sample spatial positions
             x_positions = np.arange(cube_size[0]//2, grid_size[0] - cube_size[0]//2, 

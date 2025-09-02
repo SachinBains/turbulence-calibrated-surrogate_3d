@@ -21,13 +21,13 @@ def main():
                        help='JHTDB dataset to download')
     parser.add_argument('--output_dir', required=True, help='Output directory for downloaded data')
     parser.add_argument('--mode', choices=['smoke_test', 'full_scale'], default='smoke_test',
-                       help='Download mode')
+                       help='Data collection mode')
     parser.add_argument('--cube_size', nargs=3, type=int, default=[64, 64, 64],
-                       help='Cube size (x y z)')
-    parser.add_argument('--n_cubes', type=int, default=100,
-                       help='Number of cubes for smoke test')
-    parser.add_argument('--max_cubes_per_band', type=int, default=1000,
-                       help='Maximum cubes per y+ band for full scale')
+                       help='Size of velocity cubes to download')
+    parser.add_argument('--n_cubes', type=int, default=200,
+                       help='Number of cubes for smoke test mode (corrected: 200 cubes = 210MB)')
+    parser.add_argument('--max_cubes_per_band', type=int, default=400,
+                       help='Maximum cubes per y+ band for full scale mode (corrected: 400 per band)')
     parser.add_argument('--token', help='JHTDB API token')
     parser.add_argument('--max_workers', type=int, default=4,
                        help='Maximum concurrent downloads')
@@ -36,12 +36,8 @@ def main():
     
     args = parser.parse_args()
     
-    # Initialize JHTDB client
-    client = JHTDBClient(
-        token=args.token,
-        max_workers=args.max_workers,
-        rate_limit=args.rate_limit
-    )
+    # Initialize JHTDB client (with conservative limits)
+    client = JHTDBClient(max_workers=min(args.max_workers, 10), rate_limit=max(args.rate_limit, 1.0))
     
     # Create output directory
     output_dir = Path(args.output_dir)
@@ -51,31 +47,38 @@ def main():
     print(f"Output directory: {output_dir}")
     print(f"Cube size: {args.cube_size}")
     
-    # Generate download configuration
+    print(f"\nGenerating {args.mode} configuration...")
     if args.mode == 'smoke_test':
-        configs = client.create_smoke_test_config(
+        cube_configs = client.create_smoke_test_config(
             dataset=args.dataset,
             cube_size=tuple(args.cube_size),
             n_cubes=args.n_cubes
         )
-        print(f"Generated {len(configs)} cube configurations for smoke test")
+        expected_size = len(cube_configs) * (args.cube_size[0]**3 * 3 * 4) / (1024**3)
+        print(f"Expected download size: {expected_size:.1f} GB")
         
-    else:  # full_scale
-        # Channel flow y+ bands
-        y_plus_bands = [(1, 5), (5, 15), (15, 50), (50, 150), (150, 500)]
-        
-        configs = client.create_full_scale_config(
+        print(f"Generated {len(cube_configs)} cube configurations")
+        if args.dataset == 'channel_5200':
+            print(f"Note: Channel Re_tau=5200 limited to 11 temporal frames")
+        elif args.dataset == 'channel':
+            print(f"Channel Re_tau=1000 with ~4000 temporal frames available")
+            
+            # Save configuration for reference
+            config_file = output_dir / 'download_config.json'
+            with open(config_file, 'w') as f:
+                json.dump(cube_configs, f, indent=2, default=str)
+    else:
+        cube_configs = client.create_full_scale_config(
             dataset=args.dataset,
             cube_size=tuple(args.cube_size),
-            y_plus_bands=y_plus_bands,
             max_cubes_per_band=args.max_cubes_per_band
         )
-        print(f"Generated {len(configs)} cube configurations for full scale")
+        print(f"Generated {len(cube_configs)} cube configurations for full scale")
         
         # Save configuration for reference
         config_file = output_dir / 'download_config.json'
         with open(config_file, 'w') as f:
-            json.dump(configs, f, indent=2, default=str)
+            json.dump(cube_configs, f, indent=2, default=str)
         print(f"Saved configuration to: {config_file}")
     
     # Download data
@@ -84,7 +87,7 @@ def main():
     downloaded_files = client.download_dataset_batch(
         dataset=args.dataset,
         output_dir=str(output_dir),
-        cube_configs=configs
+        cube_configs=cube_configs
     )
     
     print(f"\nDownload completed!")

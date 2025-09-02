@@ -17,23 +17,17 @@ dataset:
   domain_size: [25.13, 2.0, 9.42]  # [8π, 2, 3π]
   
   # Sampling configuration
-  cube_size: [96, 96, 96]
-  y_plus_bands: 
-    - [1, 5]      # Viscous sublayer
-    - [5, 15]     # Buffer layer
-    - [15, 50]    # Transition
-    - [50, 150]   # Log layer
-    - [150, 500]  # Outer layer
-  
-  temporal_stride: 5
-  spatial_stride: 1
+  cube_size: [96, 96, 96]  # 3D velocity cubes (10.6 MB each)
+  y_plus_bands: [[5, 30], [30, 100], [100, 300], [300, 800]]  # Corrected y+ bands
+  temporal_stride: 25  # Sample every 25th time step (decorrelated)
+  spatial_stride: 2   # Sample every 2nd spatial point
   normalize: true
   cache_data: false
   
-  # Data splits
-  train_ratio: 0.6
-  val_ratio: 0.2
-  test_ratio: 0.2
+  # Data splits (corrected for 1,600 total cubes)
+  train_ratio: 0.7   # 1,120 cubes
+  val_ratio: 0.1     # 160 cubes  
+  test_ratio: 0.2    # 320 cubes
 
 model:
   type: "unet3d"
@@ -52,10 +46,13 @@ model:
   dropout_rate: 0.1
 
 training:
-  batch_size: 4  # Reduced for 3D data
+  batch_size: 4  # Optimized for 96³ cubes (~8GB memory)
   num_epochs: 100
   learning_rate: 1e-4
   weight_decay: 1e-5
+  gradient_clip: 1.0
+  mixed_precision: true
+  gradient_checkpointing: true
   
   optimizer:
     type: "adam"
