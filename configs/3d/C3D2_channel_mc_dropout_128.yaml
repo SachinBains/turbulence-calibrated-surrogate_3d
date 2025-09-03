@@ -24,6 +24,11 @@ model:
   batch_norm: true
   activation: relu
   mc_samples: 100  # Number of MC forward passes
+
+# Uncertainty quantification
+uq:
+  method: mc_dropout
+  samples: 100
   
 # Training configuration
 train:
