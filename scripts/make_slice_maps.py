@@ -78,9 +78,9 @@ def main():
         k = int(args.slice_idx)
 
     def get_slice(arr):
-        if ax==0: return arr[k,:,:]
-        if ax==1: return arr[:,k,:]
-        if ax==2: return arr[:,:,k]
+        if ax==0: return arr[0,k,:,:]  # Select first velocity component
+        if ax==1: return arr[0,:,k,:]
+        if ax==2: return arr[0,:,:,k]
     y_slice = get_slice(y)
     mu_slice = get_slice(mu)
     err_slice = get_slice(err)
