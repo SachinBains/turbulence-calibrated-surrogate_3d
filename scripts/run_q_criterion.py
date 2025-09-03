@@ -152,7 +152,7 @@ def run_q_criterion_analysis(config_path: str, sample_indices: list = None,
     
     # Setup paths
     results_dir = Path(cfg['paths']['results_dir']) / exp_id
-    output_dir = Path('step13_analysis') / 'q_criterion' / exp_id
+    output_dir = Path(cfg['paths']['artifacts_root']) / 'analysis' / 'q_criterion' / exp_id
     output_dir.mkdir(parents=True, exist_ok=True)
     
     print(f"Running Q-criterion analysis for experiment: {exp_id}")

@@ -37,7 +37,7 @@ def main():
     
     # Setup output directories
     results_dir = Path(cfg['paths']['results_dir']) / exp_id / 'gpr'
-    figures_dir = Path('figures') / exp_id / 'gpr'
+    figures_dir = Path(cfg['paths']['artifacts_root']) / 'figures' / exp_id / 'gpr'
     results_dir.mkdir(parents=True, exist_ok=True)
     figures_dir.mkdir(parents=True, exist_ok=True)
     

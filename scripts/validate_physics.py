@@ -191,6 +191,7 @@ def plot_physics_summary(results: List[Dict], output_dir: Path, method: str, spl
 
 def main():
     parser = argparse.ArgumentParser(description='Validate physics of predicted flow fields')
+    parser.add_argument('--config', required=True, help='Path to config file')
     parser.add_argument('--results_dir', required=True, help='Results directory')
     parser.add_argument('--method', choices=['mc', 'ens'], required=True, 
                        help='UQ method (mc or ens)')
@@ -204,6 +205,9 @@ def main():
                        help='Maximum number of samples to validate')
     args = parser.parse_args()
     
+    # Load config
+    from src.utils.config import load_config
+    cfg = load_config(args.config)
     results_dir = Path(args.results_dir)
     
     # Setup output directory
@@ -211,7 +215,7 @@ def main():
         output_dir = Path(args.output_dir)
     else:
         exp_id = results_dir.name
-        output_dir = Path('figures') / exp_id
+        output_dir = Path(cfg['paths']['artifacts_root']) / 'figures' / exp_id
     
     output_dir.mkdir(parents=True, exist_ok=True)
     

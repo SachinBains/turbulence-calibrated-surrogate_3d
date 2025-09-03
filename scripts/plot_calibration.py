@@ -252,7 +252,14 @@ def main():
         output_dir = Path(args.output_dir)
     else:
         exp_id = results_dir.name
-        output_dir = Path('figures') / exp_id
+        # Load config to get artifacts_root
+        from src.utils.config import load_config
+        config_path = results_dir.parent.parent / 'configs' / '3d' / f'{exp_id}.yaml'
+        if config_path.exists():
+            cfg = load_config(str(config_path))
+            output_dir = Path(cfg['paths']['artifacts_root']) / 'figures' / exp_id
+        else:
+            output_dir = Path('figures') / exp_id
     
     output_dir.mkdir(parents=True, exist_ok=True)
     

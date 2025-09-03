@@ -197,7 +197,7 @@ def main():
     device = pick_device(args.cuda)
     
     results_dir = Path(cfg['paths']['results_dir']) / exp_id / 'global'
-    figures_dir = Path('figures') / exp_id / 'global'
+    figures_dir = Path(cfg['paths']['artifacts_root']) / 'figures' / exp_id / 'global'
     results_dir.mkdir(parents=True, exist_ok=True)
     figures_dir.mkdir(parents=True, exist_ok=True)
     
