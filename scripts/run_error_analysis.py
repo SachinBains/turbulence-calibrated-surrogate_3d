@@ -99,17 +99,19 @@ def prepare_analysis_data(predictions: np.ndarray,
 
 def main():
     parser = argparse.ArgumentParser(description='Comprehensive error analysis for turbulence models')
+    parser.add_argument('--config', required=True, help='Path to config file')
     parser.add_argument('--results_dir', required=True, help='Path to results directory')
     parser.add_argument('--split', default='test', help='Dataset split to analyze')
     parser.add_argument('--sample_idx', type=int, default=0, help='Sample index to analyze')
-    parser.add_argument('--output_dir', default='error_analysis', help='Output directory')
     parser.add_argument('--n_clusters', type=int, default=5, help='Number of failure mode clusters')
     
     args = parser.parse_args()
     
-    # Setup paths
+    # Load config and setup paths
+    from src.utils.config import load_config
+    cfg = load_config(args.config)
     results_dir = Path(args.results_dir)
-    output_dir = Path(args.output_dir) / results_dir.name
+    output_dir = Path(cfg['paths']['artifacts_root']) / 'analysis' / 'error_analysis' / results_dir.name
     output_dir.mkdir(parents=True, exist_ok=True)
     
     print(f"Running comprehensive error analysis")

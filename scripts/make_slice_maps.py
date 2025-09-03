@@ -29,7 +29,7 @@ def main():
     cfg = load_config(args.config)
     exp_id = cfg['experiment_id']
     results_dir = Path(cfg['paths']['results_dir']) / exp_id
-    figures_dir = Path('figures') / exp_id
+    figures_dir = Path(cfg['paths']['artifacts_root']) / 'figures' / exp_id
     results_dir.mkdir(parents=True, exist_ok=True)
     figures_dir.mkdir(parents=True, exist_ok=True)
 
