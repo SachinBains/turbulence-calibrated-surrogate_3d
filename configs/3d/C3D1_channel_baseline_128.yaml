@@ -41,10 +41,10 @@ train:
 # Paths (3D track artifacts)
 paths:
   artifacts_root: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d
-  results_dir: ${paths.artifacts_root}/results/${experiment_id}
-  checkpoints_dir: ${paths.artifacts_root}/checkpoints/${experiment_id}
-  logs_dir: ${paths.artifacts_root}/logs/training
-  cache_dir: ${paths.artifacts_root}/cache
+  results_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results/C3D1_channel_baseline_128
+  checkpoints_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/checkpoints/C3D1_channel_baseline_128
+  logs_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs/training
+  cache_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/cache
   
 # Hardware
 device: cuda
