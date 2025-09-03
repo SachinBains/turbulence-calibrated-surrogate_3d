@@ -31,7 +31,7 @@ def evaluate_baseline(model, loader, device, save_dir=None, cfg=None):
         yp = first_pred[0,0] if first_pred.shape[1] == 1 else first_pred[0]
         yt = first_y[0,0] if first_y.shape[1] == 1 else first_y[0]
         err = np.abs(yp - yt)
-        c = yp.shape[-1] // 2
+        c = yp.shape[0] // 2
         plt.figure(figsize=(12,4))
         plt.subplot(1,3,1)
         plt.imshow(yt[c], cmap='viridis'); plt.title('True')
