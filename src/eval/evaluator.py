@@ -28,17 +28,19 @@ def evaluate_baseline(model, loader, device, save_dir=None, cfg=None):
     if save_dir is not None and first_pred is not None and first_y is not None:
         out_dir = os.path.join('figures', cfg['experiment_id'] if cfg and 'experiment_id' in cfg else 'baseline')
         os.makedirs(out_dir, exist_ok=True)
-        yp = first_pred[0,0] if first_pred.shape[1] == 1 else first_pred[0]
-        yt = first_y[0,0] if first_y.shape[1] == 1 else first_y[0]
+        # Shape: (batch, channels, depth, height, width) = (1, 3, 64, 64, 64)
+        yp = first_pred[0]  # (3, 64, 64, 64)
+        yt = first_y[0]     # (3, 64, 64, 64)
         err = np.abs(yp - yt)
-        c = yp.shape[0] // 2
+        # Take middle slice along depth dimension and first velocity component
+        mid_z = yp.shape[1] // 2  # Middle of 64 depth slices
         plt.figure(figsize=(12,4))
         plt.subplot(1,3,1)
-        plt.imshow(yt[c, :, :], cmap='viridis'); plt.title('True')
+        plt.imshow(yt[0, mid_z, :, :], cmap='viridis'); plt.title('True (u-velocity)')
         plt.subplot(1,3,2)
-        plt.imshow(yp[c, :, :], cmap='viridis'); plt.title('Pred')
+        plt.imshow(yp[0, mid_z, :, :], cmap='viridis'); plt.title('Pred (u-velocity)')
         plt.subplot(1,3,3)
-        plt.imshow(err[c, :, :], cmap='magma'); plt.title('|Error|')
+        plt.imshow(err[0, mid_z, :, :], cmap='magma'); plt.title('|Error| (u-velocity)')
         plt.tight_layout()
         plt.savefig(os.path.join(out_dir, 'central_slice.png'))
         plt.close()
