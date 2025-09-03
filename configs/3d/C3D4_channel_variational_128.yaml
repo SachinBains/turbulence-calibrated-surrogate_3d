@@ -24,6 +24,10 @@ model:
   batch_norm: true
   activation: relu
   kl_weight: 0.0001  # KL divergence weight
+
+# Uncertainty quantification
+uq:
+  method: variational
   
 # Training configuration
 train:
