@@ -23,4 +23,4 @@ cd /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_3d
 export PYTHONPATH=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_3d:$PYTHONPATH
 
 # Run training
-python scripts/run_train.py configs/3d/C3D1_channel_baseline_128.yaml 42 --cuda
+python scripts/run_train.py --config configs/3d/C3D1_channel_baseline_128.yaml --seed 42 --cuda
