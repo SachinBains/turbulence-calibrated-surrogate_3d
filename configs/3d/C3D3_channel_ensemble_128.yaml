@@ -24,6 +24,11 @@ model:
   batch_norm: true
   activation: relu
   ensemble_size: 5  # Number of ensemble members
+
+# Uncertainty quantification
+uq:
+  method: ensemble
+  ensemble_members: 5
   
 # Training configuration
 train:
