@@ -39,6 +39,7 @@ train:
   optimizer: adam
   scheduler: cosine
   num_workers: 4
+  amp: true
   early_stopping:
     patience: 20
     min_delta: 0.000001
