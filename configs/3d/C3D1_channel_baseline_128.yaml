@@ -28,8 +28,8 @@ model:
 train:
   batch_size: 2  # Small batch for 3D memory constraints
   epochs: 200
-  lr: 1e-4
-  weight_decay: 1e-4
+  lr: 0.0001
+  weight_decay: 0.0001
   optimizer: adam
   scheduler: cosine
   num_workers: 4
