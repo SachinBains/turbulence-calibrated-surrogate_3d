@@ -12,6 +12,25 @@ dataset:
   variables: [u, v, w, p]  # velocity components + pressure
   y_plus_range: [0.5, 1000]
   normalization: channel_stats
+
+# Data configuration (required by HITDataset)
+data:
+  velocity_key: velocity
+  pressure_key: pressure
+  input_fields: [velocity]
+  target_fields: [pressure]
+  block_size: 64
+  stride: 64
+  normalisation: per_channel_z
+  eval_stride: 1
+
+# Paths configuration (required by HITDataset)
+paths:
+  velocity_h5: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/data_3d/channel_flow_smoke/cube_64_001.h5
+  pressure_h5: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/data_3d/channel_flow_smoke/cube_64_001.h5
+  splits_dir: splits
+  results_dir: results
+  experiments_manifest: experiments/manifest.csv
   
 # Model architecture (3D U-Net)
 model:
