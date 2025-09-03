@@ -5,7 +5,7 @@ from src.utils.config import load_config
 from src.utils.logging import get_logger
 from src.utils.manifest import append_manifest_row
 from src.utils.devices import pick_device
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.unet3d import UNet3D
 from src.train.losses import make_loss
 from src.train.trainer import train_loop
@@ -25,8 +25,8 @@ def main(cfg_path, seed, resume, cuda):
     exp_id = cfg.get('experiment_id', 'EXPERIMENT')
     out = Path(cfg['paths']['results_dir']) / exp_id
     out.mkdir(parents=True, exist_ok=True)
-    tr = HITDataset(cfg, 'train')
-    va = HITDataset(cfg, 'val')
+    tr = ChannelDataset(cfg['dataset']['data_dir'], 'train')
+    va = ChannelDataset(cfg['dataset']['data_dir'], 'val')
     tl = DataLoader(tr, batch_size=cfg['train']['batch_size'], shuffle=True, num_workers=cfg['train']['num_workers'])
     vl = DataLoader(va, batch_size=1, shuffle=False, num_workers=cfg['train']['num_workers'])
     # --- Build model ---
