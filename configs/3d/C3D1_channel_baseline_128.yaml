@@ -51,6 +51,11 @@ device: cuda
 mixed_precision: true  # Enable for 3D memory efficiency
 gradient_checkpointing: true
 
+# Uncertainty Quantification (baseline - no UQ)
+uq:
+  method: none
+  dropout_p: 0.0
+
 # Reproducibility
 seed: 42
 deterministic: true
