@@ -17,4 +17,8 @@ module load gcc/9.3.0
 # Activate virtual environment
 source ~/venvs/turbml/bin/activate
 
+# Set Python path and change to project directory
+cd $SLURM_SUBMIT_DIR
+export PYTHONPATH=$SLURM_SUBMIT_DIR:$PYTHONPATH
+
 python -u scripts/run_train.py --config ${1} --seed ${2}
