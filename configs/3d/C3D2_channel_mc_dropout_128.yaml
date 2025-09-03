@@ -29,6 +29,7 @@ model:
 uq:
   method: mc_dropout
   samples: 100
+  dropout_p: 0.1
   
 # Training configuration
 train:

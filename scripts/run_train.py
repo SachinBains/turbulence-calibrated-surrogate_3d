@@ -31,7 +31,10 @@ def main(cfg_path, seed, resume, cuda):
     vl = DataLoader(va, batch_size=1, shuffle=False, num_workers=cfg['train']['num_workers'])
     # --- Build model ---
     mcfg = cfg['model']
+    uq_method = cfg.get('uq', {}).get('method', 'none')
     dropout_p = cfg.get('uq', {}).get('dropout_p', 0.0)
+    
+    log.info(f"Building model with UQ method: {uq_method}, dropout_p: {dropout_p}")
 
     from src.models.unet3d import UNet3D
     net = UNet3D(
@@ -41,8 +44,13 @@ def main(cfg_path, seed, resume, cuda):
         dropout_p,
     )
 
-    if cfg['uq'].get('method', 'none') == 'mc_dropout':
-        net.enable_mc_dropout(p=cfg['uq'].get('dropout_p', 0.2))
+    if uq_method == 'mc_dropout':
+        net.enable_mc_dropout(p=dropout_p)
+        log.info(f"MC Dropout enabled with p={dropout_p}")
+    elif uq_method == 'variational':
+        log.warning("Variational method specified but using standard UNet3D - implement variational model")
+    else:
+        log.info(f"Using baseline model (method: {uq_method})")
     
     device = pick_device(cuda)
     net = net.to(device)

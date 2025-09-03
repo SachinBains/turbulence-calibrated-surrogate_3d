@@ -38,6 +38,7 @@ def main():
     
     logger.info(f"Training ensemble with {n_members} members")
     logger.info(f"Seeds: {seeds}")
+    logger.info(f"Config ensemble_members value: {cfg.get('uq', {}).get('ensemble_members', 'NOT_FOUND')}")
     
     # Setup paths
     exp_id = cfg['experiment_id']
