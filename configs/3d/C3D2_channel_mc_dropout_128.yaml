@@ -33,6 +33,7 @@ train:
   weight_decay: 1e-4
   optimizer: adam
   scheduler: cosine
+  num_workers: 4
   early_stopping:
     patience: 20
     min_delta: 1e-6
@@ -44,7 +45,6 @@ loss:
   
 # Data loading
 dataloader:
-  num_workers: 4
   pin_memory: true
   persistent_workers: true
   
