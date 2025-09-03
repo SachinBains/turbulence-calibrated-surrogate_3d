@@ -11,9 +11,9 @@
 #SBATCH --error=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs/training/C3D1_%j.err
 
 # Load required modules
-module load python/3.9
-module load cuda/11.8
-module load gcc/9.3.0
+module load python/3.13.1
+module load cuda/12.6.2
+module load gcc/13.3.0
 
 # Activate virtual environment
 source /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/venvs/turbml/bin/activate
