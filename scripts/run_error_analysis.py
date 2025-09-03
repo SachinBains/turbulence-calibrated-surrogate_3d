@@ -10,6 +10,7 @@ import argparse
 import numpy as np
 import json
 from pathlib import Path
+from typing import Optional
 
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
