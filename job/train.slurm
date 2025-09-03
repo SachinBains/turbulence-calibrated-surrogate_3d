@@ -10,4 +10,11 @@
 #SBATCH -t 06:00:00
 #SBATCH --mem=24G
 module purge
+module load python/3.9
+module load cuda/11.8
+module load gcc/9.3.0
+
+# Activate virtual environment
+source ~/venvs/turbml/bin/activate
+
 python -u scripts/run_train.py --config ${1} --seed ${2}
