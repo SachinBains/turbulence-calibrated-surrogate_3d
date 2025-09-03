@@ -1,7 +1,7 @@
 experiment_id,description,dataset,method,resolution,status,priority
-C3D1_channel_baseline_128,Channel flow baseline model,channel3d,baseline,128x128x128,planned,high
-C3D2_channel_mc_dropout_128,Channel flow MC Dropout model,channel3d,mc_dropout,128x128x128,planned,high
-C3D3_channel_ensemble_128,Channel flow ensemble model,channel3d,ensemble,128x128x128,planned,high
-C3D4_boundary_baseline_128,Boundary layer baseline model,boundary_layer3d,baseline,128x128x128,planned,medium
-C3D5_mixing_baseline_128,Mixing layer baseline model,mixing_layer3d,baseline,128x128x128,planned,medium
-C3D6_channel_transfer_256,Channel flow cross-resolution transfer,channel3d,transfer,256x256x256,planned,low
+C3D1_channel_baseline_128,Channel flow baseline model,channel3d,baseline,64x64x64,ready,high
+C3D2_channel_mc_dropout_128,Channel flow MC Dropout model,channel3d,mc_dropout,64x64x64,ready,high
+C3D3_channel_ensemble_128,Channel flow ensemble model,channel3d,ensemble,64x64x64,ready,high
+C3D4_channel_variational_128,Channel flow variational model,channel3d,variational,64x64x64,ready,high
+C3D5_channel_swag_128,Channel flow SWAG model,channel3d,swag,64x64x64,ready,high
+C3D6_channel_physics_informed_128,Channel flow physics-informed model,channel3d,physics_informed,64x64x64,ready,high

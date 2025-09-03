@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
-from dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     args = ap.parse_args()
 
     cfg = yaml.safe_load(open(args.config, "r"))
-    ds = HITDataset(cfg, split=args.split)
+    ds = ChannelDataset(cfg['dataset']['data_dir'], args.split)
     loader = DataLoader(ds, batch_size=1, num_workers=0)
 
     for i, (X, y) in enumerate(loader):

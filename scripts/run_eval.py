@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from src.utils.config import load_config
 from src.utils.seeding import seed_all
 from src.utils.logging import get_logger
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.unet3d import UNet3D
 from src.eval.evaluator import evaluate_baseline
 from src.eval.temp_scaling import TemperatureScaler
@@ -15,7 +15,7 @@ from src.eval.conformal import conformal_wrap
 def main(cfg_path, seed, mc_samples, temperature_scale, conformal, cuda):
   cfg=load_config(cfg_path); seed_all(seed or cfg.get('seed',42)); log=get_logger()
   exp_id=cfg.get('experiment_id','EXPERIMENT'); out=Path(cfg['paths']['results_dir'])/exp_id; out.mkdir(parents=True,exist_ok=True)
-  val=HITDataset(cfg,'val',eval_mode=True); test=HITDataset(cfg,'test',eval_mode=True)
+  val=ChannelDataset(cfg['dataset']['data_dir'],'val'); test=ChannelDataset(cfg['dataset']['data_dir'], 'test')
   vl=DataLoader(val,batch_size=1,shuffle=False); tl=DataLoader(test,batch_size=1,shuffle=False)
   # Load best checkpoint (*.pth) by default
   best_ckpts = sorted(out.glob('best_*.pth'))

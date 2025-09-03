@@ -1,16 +1,28 @@
 {
-  "shape": [
-    64,
-    64,
-    64
-  ],
-  "block_size": 32,
-  "stride": 32,
-  "n_starts": 8,
-  "mode": "id",
-  "train_val_test": [
-    5,
-    1,
-    2
-  ]
+  "dataset_name": "channel_flow_3d",
+  "data_dir": "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/data_3d/channel_flow_smoke",
+  "total_cubes": 200,
+  "cube_shape": [64, 64, 64],
+  "variables": ["u", "v", "w"],
+  "splits": {
+    "train": {
+      "ratio": 0.7,
+      "count": 140,
+      "indices": "0-139"
+    },
+    "val": {
+      "ratio": 0.15,
+      "count": 30,
+      "indices": "140-169"
+    },
+    "test": {
+      "ratio": 0.15,
+      "count": 30,
+      "indices": "170-199"
+    }
+  },
+  "normalization": {
+    "method": "channel_stats",
+    "computed": false
+  }
 }

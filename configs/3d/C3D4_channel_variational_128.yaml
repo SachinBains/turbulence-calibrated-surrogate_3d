@@ -1,0 +1,71 @@
+# C3D4: Channel Flow Variational - 128³ Resolution
+# 3D Track Experiment - Variational inference for uncertainty quantification
+
+experiment_id: C3D4_channel_variational_128
+description: "Channel flow variational model at 128³ resolution"
+
+# Dataset configuration
+dataset:
+  name: channel3d
+  data_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/data_3d/channel_flow_smoke
+  resolution: [64, 64, 64]
+  variables: [u, v, w]  # velocity components only
+  y_plus_range: [0.5, 1000]
+  normalization: channel_stats
+  
+# Model architecture (3D Variational U-Net)
+model:
+  name: unet3d_variational
+  in_channels: 3
+  out_channels: 3
+  base_channels: 32
+  depth: 4
+  dropout: 0.0  # No dropout for variational
+  batch_norm: true
+  activation: relu
+  kl_weight: 1e-5  # KL divergence weight
+  
+# Training configuration
+training:
+  batch_size: 2
+  epochs: 200
+  learning_rate: 1e-4
+  weight_decay: 1e-4
+  optimizer: adam
+  scheduler: cosine
+  early_stopping:
+    patience: 20
+    min_delta: 1e-6
+    
+# Loss function
+loss:
+  name: variational_elbo
+  reduction: mean
+  
+# Data loading
+dataloader:
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  
+# Validation
+validation:
+  frequency: 5
+  metrics: [rmse, mae, r2, kl_divergence, elbo]
+  
+# Paths (3D track artifacts)
+paths:
+  artifacts_root: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d
+  results_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results/C3D4_channel_variational_128
+  checkpoints_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/checkpoints/C3D4_channel_variational_128
+  logs_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs/training
+  cache_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/cache
+  
+# Hardware
+device: cuda
+mixed_precision: true
+gradient_checkpointing: true
+
+# Reproducibility
+seed: 42
+deterministic: true

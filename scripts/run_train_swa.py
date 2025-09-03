@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.utils.devices import pick_device
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.unet3d import UNet3D
 from src.train.swa import (
     create_swa_model, create_swa_scheduler, update_bn_stats,
@@ -44,8 +44,8 @@ def build_model(cfg: dict, device: torch.device) -> nn.Module:
 
 def build_dataloaders(cfg: dict) -> tuple:
     """Build train and validation dataloaders."""
-    train_dataset = HITDataset(cfg, split='train')
-    val_dataset = HITDataset(cfg, split='val')
+    train_dataset = ChannelDataset(cfg['dataset']['data_dir'], 'train')
+    val_dataset = ChannelDataset(cfg['dataset']['data_dir'], 'val')
     
     batch_size = cfg['train']['batch_size']
     num_workers = cfg['train'].get('num_workers', 0)

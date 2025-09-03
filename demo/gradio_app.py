@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.utils.config import load_config
 from src.utils.devices import pick_device
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.unet3d import UNet3D
 from src.interp.shap_analysis import TurbulenceSHAP
 from src.interp.ale import TurbulenceALE
@@ -98,7 +98,7 @@ class TurbulenceDemo:
             self.models[experiment_name] = model
             
             # Load dataset
-            dataset = HITDataset(cfg, 'test', eval_mode=True)
+            dataset = ChannelDataset(cfg['dataset']['data_dir'], 'test')
             self.datasets[experiment_name] = dataset
             
             # Initialize analyzers

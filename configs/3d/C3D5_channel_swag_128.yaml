@@ -1,0 +1,73 @@
+# C3D5: Channel Flow SWAG - 128³ Resolution
+# 3D Track Experiment - Stochastic Weight Averaging Gaussian for uncertainty quantification
+
+experiment_id: C3D5_channel_swag_128
+description: "Channel flow SWAG model at 128³ resolution"
+
+# Dataset configuration
+dataset:
+  name: channel3d
+  data_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/data_3d/channel_flow_smoke
+  resolution: [64, 64, 64]
+  variables: [u, v, w]  # velocity components only
+  y_plus_range: [0.5, 1000]
+  normalization: channel_stats
+  
+# Model architecture (3D U-Net with SWAG)
+model:
+  name: unet3d_swag
+  in_channels: 3
+  out_channels: 3
+  base_channels: 32
+  depth: 4
+  dropout: 0.0  # No dropout for SWAG
+  batch_norm: true
+  activation: relu
+  swag_start: 100  # Start SWAG collection at epoch 100
+  swag_lr: 1e-5   # SWAG learning rate
+  swag_c_epochs: 1  # Collect every epoch
+  
+# Training configuration
+training:
+  batch_size: 2
+  epochs: 200
+  learning_rate: 1e-4
+  weight_decay: 1e-4
+  optimizer: adam
+  scheduler: cosine
+  early_stopping:
+    patience: 20
+    min_delta: 1e-6
+    
+# Loss function
+loss:
+  name: mse
+  reduction: mean
+  
+# Data loading
+dataloader:
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  
+# Validation
+validation:
+  frequency: 5
+  metrics: [rmse, mae, r2, swag_variance]
+  
+# Paths (3D track artifacts)
+paths:
+  artifacts_root: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d
+  results_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results/C3D5_channel_swag_128
+  checkpoints_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/checkpoints/C3D5_channel_swag_128
+  logs_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs/training
+  cache_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/cache
+  
+# Hardware
+device: cuda
+mixed_precision: true
+gradient_checkpointing: true
+
+# Reproducibility
+seed: 42
+deterministic: true

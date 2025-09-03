@@ -7,17 +7,17 @@ description: "Channel flow ensemble model at 128³ resolution"
 # Dataset configuration
 dataset:
   name: channel3d
-  data_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/datasets/channel3d
-  resolution: [128, 128, 128]
-  variables: [u, v, w, p]
+  data_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/data_3d/channel_flow_smoke
+  resolution: [64, 64, 64]
+  variables: [u, v, w]  # velocity components only
   y_plus_range: [0.5, 1000]
   normalization: channel_stats
   
 # Model architecture (3D U-Net Ensemble)
 model:
   name: unet3d_ensemble
-  in_channels: 4
-  out_channels: 4
+  in_channels: 3
+  out_channels: 3
   base_channels: 32
   depth: 4
   dropout: 0.0  # No dropout for ensemble
@@ -56,10 +56,10 @@ validation:
 # Paths (3D track artifacts)
 paths:
   artifacts_root: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d
-  results_dir: ${paths.artifacts_root}/results/${experiment_id}
-  checkpoints_dir: ${paths.artifacts_root}/checkpoints/${experiment_id}
-  logs_dir: ${paths.artifacts_root}/logs/training
-  cache_dir: ${paths.artifacts_root}/cache
+  results_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results/C3D3_channel_ensemble_128
+  checkpoints_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/checkpoints/C3D3_channel_ensemble_128
+  logs_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs/training
+  cache_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/cache
   
 # Hardware
 device: cuda

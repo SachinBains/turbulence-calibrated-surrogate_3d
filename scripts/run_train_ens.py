@@ -12,7 +12,7 @@ from src.utils.devices import pick_device
 from src.utils.seeding import seed_all
 from src.utils.logging import get_logger
 from src.utils.manifest import append_manifest_row
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.uq.ensembles import train_ensemble
 
 def main():
@@ -45,8 +45,8 @@ def main():
     results_dir.mkdir(parents=True, exist_ok=True)
     
     # Load datasets
-    train_dataset = HITDataset(cfg, 'train')
-    val_dataset = HITDataset(cfg, 'val')
+    train_dataset = ChannelDataset(cfg['dataset']['data_dir'], 'train')
+    val_dataset = ChannelDataset(cfg['dataset']['data_dir'], 'val')
     
     train_loader = DataLoader(
         train_dataset, 

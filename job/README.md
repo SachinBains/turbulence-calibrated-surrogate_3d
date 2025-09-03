@@ -1,1 +1,0 @@
-Submit with: `sbatch job/train.slurm configs/E2_hit_bayes.yaml 42` then `sbatch job/eval.slurm configs/E2_hit_bayes.yaml 42`
