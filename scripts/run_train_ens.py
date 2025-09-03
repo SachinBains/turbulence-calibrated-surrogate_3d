@@ -45,8 +45,8 @@ def main():
     results_dir.mkdir(parents=True, exist_ok=True)
     
     # Load datasets
-    train_dataset = ChannelDataset(cfg['dataset']['data_dir'], 'train')
-    val_dataset = ChannelDataset(cfg['dataset']['data_dir'], 'val')
+    train_dataset = ChannelDataset(cfg, 'train')
+    val_dataset = ChannelDataset(cfg, 'val')
     
     train_loader = DataLoader(
         train_dataset, 

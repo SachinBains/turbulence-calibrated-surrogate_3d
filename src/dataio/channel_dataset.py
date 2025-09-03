@@ -19,12 +19,14 @@ class ChannelDataset(Dataset):
             eval_mode: Whether in evaluation mode (affects normalization)
         """
         # Extract data directory from config
-        if 'data' in cfg and 'data_dir' in cfg['data']:
+        if 'dataset' in cfg and 'data_dir' in cfg['dataset']:
+            self.data_dir = Path(cfg['dataset']['data_dir'])
+        elif 'data' in cfg and 'data_dir' in cfg['data']:
             self.data_dir = Path(cfg['data']['data_dir'])
         elif 'paths' in cfg and 'data_dir' in cfg['paths']:
             self.data_dir = Path(cfg['paths']['data_dir'])
         else:
-            raise ValueError("Config must contain data_dir path")
+            raise ValueError("Config must contain data_dir path in dataset, data, or paths section")
             
         self.split = split
         self.eval_mode = eval_mode

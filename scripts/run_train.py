@@ -25,8 +25,8 @@ def main(cfg_path, seed, resume, cuda):
     exp_id = cfg.get('experiment_id', 'EXPERIMENT')
     out = Path(cfg['paths']['results_dir']) / exp_id
     out.mkdir(parents=True, exist_ok=True)
-    tr = ChannelDataset(cfg['dataset']['data_dir'], 'train')
-    va = ChannelDataset(cfg['dataset']['data_dir'], 'val')
+    tr = ChannelDataset(cfg, 'train')
+    va = ChannelDataset(cfg, 'val')
     tl = DataLoader(tr, batch_size=cfg['train']['batch_size'], shuffle=True, num_workers=cfg['train']['num_workers'])
     vl = DataLoader(va, batch_size=1, shuffle=False, num_workers=cfg['train']['num_workers'])
     # --- Build model ---

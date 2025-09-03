@@ -44,8 +44,8 @@ def build_model(cfg: dict, device: torch.device) -> nn.Module:
 
 def build_dataloaders(cfg: dict) -> tuple:
     """Build train and validation dataloaders."""
-    train_dataset = ChannelDataset(cfg['dataset']['data_dir'], 'train')
-    val_dataset = ChannelDataset(cfg['dataset']['data_dir'], 'val')
+    train_dataset = ChannelDataset(cfg, 'train')
+    val_dataset = ChannelDataset(cfg, 'val')
     
     batch_size = cfg['train']['batch_size']
     num_workers = cfg['train'].get('num_workers', 0)

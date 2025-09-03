@@ -13,7 +13,7 @@ if __name__ == "__main__":
     args = ap.parse_args()
 
     cfg = yaml.safe_load(open(args.config, "r"))
-    ds = ChannelDataset(cfg['dataset']['data_dir'], args.split)
+    ds = ChannelDataset(cfg, args.split)
     loader = DataLoader(ds, batch_size=1, num_workers=0)
 
     for i, (X, y) in enumerate(loader):

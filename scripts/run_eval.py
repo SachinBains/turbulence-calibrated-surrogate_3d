@@ -15,7 +15,7 @@ from src.eval.conformal import conformal_wrap
 def main(cfg_path, seed, mc_samples, temperature_scale, conformal, cuda):
   cfg=load_config(cfg_path); seed_all(seed or cfg.get('seed',42)); log=get_logger()
   exp_id=cfg.get('experiment_id','EXPERIMENT'); out=Path(cfg['paths']['results_dir'])/exp_id; out.mkdir(parents=True,exist_ok=True)
-  val=ChannelDataset(cfg['dataset']['data_dir'],'val'); test=ChannelDataset(cfg['dataset']['data_dir'], 'test')
+  val=ChannelDataset(cfg,'val'); test=ChannelDataset(cfg, 'test')
   vl=DataLoader(val,batch_size=1,shuffle=False); tl=DataLoader(test,batch_size=1,shuffle=False)
   # Load best checkpoint (*.pth) by default
   best_ckpts = sorted(out.glob('best_*.pth'))
