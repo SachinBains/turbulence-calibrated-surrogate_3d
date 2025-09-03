@@ -1,5 +1,6 @@
 #!/bin/bash
 #SBATCH -J train_hit
+#SBATCH --partition=gpu
 #SBATCH -o job/logs/train_%j.out
 #SBATCH -e job/logs/train_%j.err
 #SBATCH -N 1
