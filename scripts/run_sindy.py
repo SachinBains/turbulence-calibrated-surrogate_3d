@@ -11,7 +11,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from src.utils.config import load_config
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.sindy import TurbulenceSINDy
 
 def compute_time_derivatives(velocity_sequence, dt=1.0):
@@ -85,7 +85,7 @@ def main():
     print(f"Alpha: {args.alpha}, Samples: {args.n_samples}, Timesteps: {args.n_timesteps}")
     
     # Load dataset
-    dataset = HITDataset(cfg, args.split, eval_mode=True)
+    dataset = ChannelDataset(cfg, args.split, eval_mode=True)
     loader = DataLoader(dataset, batch_size=1, shuffle=False)
     
     # Collect velocity sequences

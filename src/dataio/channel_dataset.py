@@ -7,24 +7,34 @@ from typing import List, Tuple
 import glob
 
 class ChannelDataset(Dataset):
-    """Simple dataset for channel flow velocity cubes."""
+    """Dataset for channel flow velocity cubes - compatible with HITDataset interface."""
     
-    def __init__(self, data_dir: str, split: str = 'train'):
+    def __init__(self, cfg, split: str = 'train', eval_mode: bool = False):
         """
         Initialize Channel Dataset.
         
         Args:
-            data_dir: Directory containing cube_64_*.h5 files
+            cfg: Configuration dictionary with data paths
             split: Dataset split ('train', 'val', 'test')
+            eval_mode: Whether in evaluation mode (affects normalization)
         """
-        self.data_dir = Path(data_dir)
+        # Extract data directory from config
+        if 'data' in cfg and 'data_dir' in cfg['data']:
+            self.data_dir = Path(cfg['data']['data_dir'])
+        elif 'paths' in cfg and 'data_dir' in cfg['paths']:
+            self.data_dir = Path(cfg['paths']['data_dir'])
+        else:
+            raise ValueError("Config must contain data_dir path")
+            
         self.split = split
+        self.eval_mode = eval_mode
+        self.cfg = cfg
         
         # Find all cube files
         cube_files = sorted(glob.glob(str(self.data_dir / "cube_64_*.h5")))
         
         if not cube_files:
-            raise ValueError(f"No cube_64_*.h5 files found in {data_dir}")
+            raise ValueError(f"No cube_64_*.h5 files found in {self.data_dir}")
         
         # Split data: 70% train, 15% val, 15% test
         n_total = len(cube_files)
@@ -72,7 +82,7 @@ class ChannelDataset(Dataset):
         return len(self.cube_files)
     
     def __getitem__(self, idx):
-        """Load a velocity cube."""
+        """Load a velocity cube - returns (x, y) tuple like HITDataset."""
         cube_file = self.cube_files[idx]
         
         with h5py.File(cube_file, 'r') as f:
@@ -84,8 +94,11 @@ class ChannelDataset(Dataset):
         # Convert to torch tensor: (3, 64, 64, 64)
         velocity_tensor = torch.from_numpy(velocity).float().permute(3, 0, 1, 2)
         
-        return {
-            'input': velocity_tensor,
-            'target': velocity_tensor,  # For now, same as input (autoencoder style)
-            'file': str(cube_file)
-        }
+        # Return (x, y) tuple for compatibility with HITDataset interface
+        if self.eval_mode:
+            # In eval mode, return denormalized data for ground truth comparison
+            velocity_denorm = velocity * (self.velocity_std + 1e-8) + self.velocity_mean
+            velocity_denorm_tensor = torch.from_numpy(velocity_denorm).float().permute(3, 0, 1, 2)
+            return velocity_tensor, velocity_denorm_tensor
+        else:
+            return velocity_tensor, velocity_tensor

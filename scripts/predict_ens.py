@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 
 from src.utils.config import load_config
 from src.utils.devices import pick_device
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.uq.ensembles import ensemble_predict, compute_ensemble_metrics
 
 def main():
@@ -45,7 +45,7 @@ def main():
     print(f"Loading {len(member_paths)} ensemble members")
     
     # Load dataset
-    dataset = HITDataset(cfg, args.split, eval_mode=True)
+    dataset = ChannelDataset(cfg, args.split, eval_mode=True)
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=0)
     
     print(f"Running ensemble prediction on {len(dataset)} {args.split} samples...")

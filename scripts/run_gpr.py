@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 import time
 
 from src.utils.config import load_config
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.gpr import TurbulenceGPR
 
 def main():
@@ -46,7 +46,7 @@ def main():
     print(f"Training samples: {args.n_train}, Test samples: {args.n_test}")
     
     # Load dataset
-    dataset = HITDataset(cfg, args.split, eval_mode=True)
+    dataset = ChannelDataset(cfg, args.split, eval_mode=True)
     loader = DataLoader(dataset, batch_size=1, shuffle=True)
     
     # Collect training data

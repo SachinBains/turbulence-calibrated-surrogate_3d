@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.utils.config import load_config
 from src.utils.devices import pick_device
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.unet3d import UNet3D
 from src.physics.q_criterion import QCriterionAnalyzer, TurbulenceVisualization
 from torch.utils.data import DataLoader

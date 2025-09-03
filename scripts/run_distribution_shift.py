@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.utils.config import load_config
 from src.utils.devices import pick_device
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.unet3d import UNet3D
 from src.eval.distribution_shift import DistributionShiftDetector, DomainAdaptationAnalyzer
 from torch.utils.data import DataLoader
@@ -43,8 +43,8 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # Load datasets
-    train_dataset = HITDataset(cfg, 'train', eval_mode=True)
-    test_dataset = HITDataset(cfg, args.test_split, eval_mode=True)
+    train_dataset = ChannelDataset(cfg, 'train', eval_mode=True)
+    test_dataset = ChannelDataset(cfg, args.test_split, eval_mode=True)
     
     print(f"Train dataset size: {len(train_dataset)}")
     print(f"Test dataset size: {len(test_dataset)}")

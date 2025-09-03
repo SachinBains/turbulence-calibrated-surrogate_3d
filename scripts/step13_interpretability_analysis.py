@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.utils.config import load_config
 from src.utils.devices import pick_device
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.unet3d import UNet3D
 from src.interp.shap_analysis import TurbulenceSHAP
 from src.interp.ale import TurbulenceALE
@@ -57,7 +57,7 @@ def load_model_and_data(config_path: str, device: torch.device) -> Tuple[torch.n
     model.eval()
     
     # Load dataset
-    dataset = HITDataset(cfg, 'test', eval_mode=True)
+    dataset = ChannelDataset(cfg, 'test', eval_mode=True)
     loader = DataLoader(dataset, batch_size=1, shuffle=False)
     
     return model, loader

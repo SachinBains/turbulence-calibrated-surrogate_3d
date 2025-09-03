@@ -13,7 +13,7 @@ from pathlib import Path
 from src.utils.devices import pick_device
 from src.utils.config import load_config
 from src.eval.evaluator import evaluate_baseline
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.unet3d import UNet3D
 import torch
 from torch.utils.data import DataLoader

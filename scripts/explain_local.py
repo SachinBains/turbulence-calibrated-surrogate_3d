@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 
 from src.utils.config import load_config
 from src.utils.devices import pick_device
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.unet3d import UNet3D
 from src.interp.grad import integrated_gradients, gradient_shap
 from src.interp.occlusion3d import occlusion_importance
@@ -139,7 +139,7 @@ def main():
     figures_dir.mkdir(parents=True, exist_ok=True)
     
     # Load dataset
-    dataset = HITDataset(cfg, args.split, eval_mode=True)
+    dataset = ChannelDataset(cfg, args.split, eval_mode=True)
     loader = DataLoader(dataset, batch_size=1, shuffle=False)
     
     # Load model

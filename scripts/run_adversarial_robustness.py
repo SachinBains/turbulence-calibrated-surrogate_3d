@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.utils.config import load_config
 from src.utils.devices import pick_device
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.unet3d import UNet3D
 from src.eval.adversarial_robustness import RobustnessEvaluator
 from torch.utils.data import DataLoader
@@ -67,7 +67,7 @@ def main():
     print(f"Loaded model from: {ckpts[-1]}")
     
     # Load dataset
-    dataset = HITDataset(cfg, args.split, eval_mode=True)
+    dataset = ChannelDataset(cfg, args.split, eval_mode=True)
     data_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False, num_workers=0)
     
     print(f"Dataset size: {len(dataset)}")

@@ -12,7 +12,7 @@ from pathlib import Path
 import torch
 from src.utils.devices import pick_device
 from src.utils.config import load_config
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.unet3d import UNet3D
 from torch.utils.data import DataLoader
 
@@ -34,7 +34,7 @@ def main():
     figures_dir.mkdir(parents=True, exist_ok=True)
 
     # Load GT and prediction
-    ds = HITDataset(cfg, args.split, eval_mode=True)
+    ds = ChannelDataset(cfg, args.split, eval_mode=True)
     y_true = []
     for _, y in DataLoader(ds, batch_size=1, shuffle=False):
         y_true.append(y.numpy())

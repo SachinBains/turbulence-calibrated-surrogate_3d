@@ -6,7 +6,7 @@ import yaml
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.unet3d import UNet3D
 from src.uq.mc_dropout import mc_predict, gaussian_nll, gaussian_coverage
 
@@ -45,7 +45,7 @@ def load_weights(model, ckpt_path, device):
         model.load_state_dict(state)
 
 def build_loader(cfg, split):
-    ds = HITDataset(cfg, split=split, eval_mode=True)
+    ds = ChannelDataset(cfg, split=split, eval_mode=True)
     nw = int(cfg['train'].get('num_workers', 0))
     return DataLoader(ds, batch_size=1, shuffle=False, num_workers=nw, pin_memory=False)
 

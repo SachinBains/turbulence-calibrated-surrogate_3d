@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import torch
 import numpy as np
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.utils.config import load_config
 from src.models.unet3d import UNet3D
 from src.uq.mc_dropout import mc_predict
@@ -17,12 +17,12 @@ def test_ab_split_functionality():
     
     # Test E3 config (baseline)
     cfg = load_config('configs/E3_hit_ab_baseline.yaml')
-    ds = HITDataset(cfg, 'test')
+    ds = ChannelDataset(cfg, 'test')
     print(f"E3 (baseline) test split has {len(ds)} samples")
     
     # Test E4 config (dropout)
     cfg = load_config('configs/E4_hit_ab_dropout.yaml')
-    ds = HITDataset(cfg, 'test')
+    ds = ChannelDataset(cfg, 'test')
     print(f"E4 (dropout) test split has {len(ds)} samples")
     
     print("A->B split functionality verified successfully!")
@@ -32,7 +32,7 @@ def test_model_forward_pass():
     
     # Load E4 config (with dropout)
     cfg = load_config('configs/E4_hit_ab_dropout.yaml')
-    ds = HITDataset(cfg, 'test')
+    ds = ChannelDataset(cfg, 'test')
     loader = DataLoader(ds, batch_size=1, shuffle=False, num_workers=0)
     
     # Create model

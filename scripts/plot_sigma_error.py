@@ -2,7 +2,7 @@
 """
 Sigma vs |Error| correlation and scatter plot for MC Dropout UQ experiments.
 - Loads mc_mean_{split}.npy and mc_var_{split}.npy from results/{exp}/
-- Loads ground truth y from HITDataset (with proper normalization)
+- Loads ground truth y from ChannelDataset (with proper normalization)
 - Computes per-voxel |error| and sigma, and computes Pearson/Spearman correlations
 - Saves JSON stats and scatter/hist plots under results/ and figures/
 """
@@ -14,7 +14,7 @@ from scipy.stats import pearsonr, spearmanr
 import torch
 from src.utils.devices import pick_device
 from src.utils.config import load_config
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.models.unet3d import UNet3D
 from src.uq.mc_dropout import mc_predict
 from torch.utils.data import DataLoader
@@ -41,7 +41,7 @@ def main():
     if not mean_path.exists() or not var_path.exists():
         print("MC mean/var not found, running MC prediction...")
         device = pick_device(args.cuda)
-        ds = HITDataset(cfg, args.split, eval_mode=True)
+        ds = ChannelDataset(cfg, args.split, eval_mode=True)
         loader = DataLoader(ds, batch_size=1, shuffle=False)
         mcfg = cfg['model']
         net = UNet3D(mcfg['in_channels'], mcfg['out_channels'], base_ch=mcfg['base_channels'])
@@ -58,8 +58,8 @@ def main():
     var = np.load(var_path)
     sigma = np.sqrt(var)
 
-    # Load GT using HITDataset (de-normalized)
-    ds = HITDataset(cfg, args.split, eval_mode=True)
+    # Load GT using ChannelDataset (de-normalized)
+    ds = ChannelDataset(cfg, args.split, eval_mode=True)
     y_true = []
     for _, y in DataLoader(ds, batch_size=1, shuffle=False):
         y_true.append(y.numpy())

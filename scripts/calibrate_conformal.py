@@ -9,7 +9,7 @@ from pathlib import Path
 from torch.utils.data import DataLoader
 
 from src.utils.config import load_config
-from src.dataio.hit_dataset import HITDataset
+from src.dataio.channel_dataset import ChannelDataset
 from src.uq.conformal import compute_residuals, fit_conformal
 
 def main():
@@ -45,7 +45,7 @@ def main():
     print(f"Loaded {args.base} validation predictions: {pred_mean.shape}")
     
     # Load ground truth
-    val_dataset = HITDataset(cfg, 'val', eval_mode=True)
+    val_dataset = ChannelDataset(cfg, 'val', eval_mode=True)
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0)
     
     y_true = []
