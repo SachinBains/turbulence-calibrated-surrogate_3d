@@ -36,21 +36,31 @@ def main(cfg_path, seed, resume, cuda):
     
     log.info(f"Building model with UQ method: {uq_method}, dropout_p: {dropout_p}")
 
-    from src.models.unet3d import UNet3D
-    net = UNet3D(
-        mcfg['in_channels'],
-        mcfg['out_channels'],
-        mcfg['base_channels'],
-        dropout_p,
-    )
-
-    if uq_method == 'mc_dropout':
-        net.enable_mc_dropout(p=dropout_p)
-        log.info(f"MC Dropout enabled with p={dropout_p}")
-    elif uq_method == 'variational':
-        log.warning("Variational method specified but using standard UNet3D - implement variational model")
+    if uq_method == 'variational':
+        from src.models.variational_unet3d import VariationalUNet3D
+        kl_weight = mcfg.get('kl_weight', 1e-5)
+        net = VariationalUNet3D(
+            mcfg['in_channels'],
+            mcfg['out_channels'],
+            mcfg['base_channels'],
+            dropout_p,
+            kl_weight=kl_weight
+        )
+        log.info(f"Variational UNet3D created with kl_weight={kl_weight}")
     else:
-        log.info(f"Using baseline model (method: {uq_method})")
+        from src.models.unet3d import UNet3D
+        net = UNet3D(
+            mcfg['in_channels'],
+            mcfg['out_channels'],
+            mcfg['base_channels'],
+            dropout_p,
+        )
+        
+        if uq_method == 'mc_dropout':
+            net.enable_mc_dropout(p=dropout_p)
+            log.info(f"MC Dropout enabled with p={dropout_p}")
+        else:
+            log.info(f"Using baseline model (method: {uq_method})")
     
     device = pick_device(cuda)
     net = net.to(device)
@@ -69,7 +79,11 @@ def main(cfg_path, seed, resume, cuda):
     }
     with open(out / "run_info.json", "w") as f:
         json.dump(run_info, f, indent=2)
-    best = train_loop(cfg, net, crit, opt, scaler, tl, vl, out, log, resume_path=resume, device=device)
+    if uq_method == 'variational':
+        from src.train.variational_trainer import variational_train_loop
+        best = variational_train_loop(cfg, net, crit, opt, scaler, tl, vl, out, log, resume_path=resume, device=device)
+    else:
+        best = train_loop(cfg, net, crit, opt, scaler, tl, vl, out, log, resume_path=resume, device=device)
     append_manifest_row(cfg_path, seed_val, str(out))
     log.info(f'Best: {best}')
 
