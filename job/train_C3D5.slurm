@@ -22,5 +22,5 @@ source /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/venvs/turbml/bin/activate
 cd /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_3d
 export PYTHONPATH=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_3d:$PYTHONPATH
 
-# Run SWAG training
-python scripts/run_train_swa.py --config configs/3d/C3D5_channel_swag_128.yaml --seed 42 --cuda
+# Run SWAG training (using C3D1 baseline as pretrained starting point)
+python scripts/run_train_swa.py --config configs/3d/C3D5_channel_swag_128.yaml --pretrained /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results/C3D1_channel_baseline_128/best_model.pth --swa_start 100 --swa_lr 0.00001 --epochs 200 --cuda
