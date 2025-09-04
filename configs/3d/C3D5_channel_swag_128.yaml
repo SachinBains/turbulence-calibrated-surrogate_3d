@@ -24,36 +24,22 @@ model:
   batch_norm: true
   activation: relu
   swag_start: 100  # Start SWAG collection at epoch 100
-  swag_lr: 1e-5   # SWAG learning rate
+  swag_lr: 0.00001   # SWAG learning rate
   swag_c_epochs: 1  # Collect every epoch
   
 # Training configuration
-training:
+train:
   batch_size: 2
   epochs: 200
-  learning_rate: 1e-4
-  weight_decay: 1e-4
+  lr: 0.00001
+  weight_decay: 0.00001
   optimizer: adam
   scheduler: cosine
-  early_stopping:
-    patience: 20
-    min_delta: 1e-6
-    
-# Loss function
-loss:
-  name: mse
-  reduction: mean
-  
-# Data loading
-dataloader:
   num_workers: 4
-  pin_memory: true
-  persistent_workers: true
-  
-# Validation
-validation:
-  frequency: 5
-  metrics: [rmse, mae, r2, swag_variance]
+  loss: mse
+  early_stop_patience: 20
+  save_every: 5
+  amp: true
   
 # Paths (3D track artifacts)
 paths:
@@ -65,9 +51,6 @@ paths:
   
 # Hardware
 device: cuda
-mixed_precision: true
-gradient_checkpointing: true
 
 # Reproducibility
 seed: 42
-deterministic: true
