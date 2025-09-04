@@ -86,6 +86,10 @@ def main(cfg_path, seed, resume, cuda):
         from src.train.swag_trainer import swag_train_loop
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=cfg['train']['epochs'])
         best = swag_train_loop(net, tl, vl, opt, scheduler, out, log, cfg, resume_path=resume, device=device)
+    elif cfg['train'].get('loss') == 'physics_informed':
+        from src.train.physics_trainer import physics_train_loop
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=cfg['train']['epochs'])
+        best = physics_train_loop(net, tl, vl, opt, scheduler, out, log, cfg, resume_path=resume, device=device)
     else:
         best = train_loop(cfg, net, crit, opt, scaler, tl, vl, out, log, resume_path=resume, device=device)
     append_manifest_row(cfg_path, seed_val, str(out))

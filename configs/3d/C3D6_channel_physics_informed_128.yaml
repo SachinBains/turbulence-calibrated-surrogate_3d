@@ -13,9 +13,9 @@ dataset:
   y_plus_range: [0.5, 1000]
   normalization: channel_stats
   
-# Model architecture (3D Physics-Informed U-Net)
+# Model architecture (3D U-Net with Physics-Informed Training)
 model:
-  name: unet3d_physics
+  name: unet3d
   in_channels: 3
   out_channels: 3
   base_channels: 32
@@ -26,35 +26,21 @@ model:
   physics_weight: 0.1  # Physics loss weight
   
 # Training configuration
-training:
+train:
   batch_size: 2
   epochs: 200
-  learning_rate: 1e-4
-  weight_decay: 1e-4
+  lr: 0.0001
+  weight_decay: 0.0001
   optimizer: adam
   scheduler: cosine
-  early_stopping:
-    patience: 20
-    min_delta: 1e-6
-    
-# Loss function
-loss:
-  name: physics_informed
-  data_weight: 1.0
+  num_workers: 4
+  loss: physics_informed
+  early_stop_patience: 20
+  save_every: 5
+  amp: true
   physics_weight: 0.1
   continuity_weight: 0.05
   momentum_weight: 0.05
-  
-# Data loading
-dataloader:
-  num_workers: 4
-  pin_memory: true
-  persistent_workers: true
-  
-# Validation
-validation:
-  frequency: 5
-  metrics: [rmse, mae, r2, physics_loss, continuity_error]
   
 # Paths (3D track artifacts)
 paths:
@@ -66,9 +52,6 @@ paths:
   
 # Hardware
 device: cuda
-mixed_precision: true
-gradient_checkpointing: true
 
 # Reproducibility
 seed: 42
-deterministic: true
