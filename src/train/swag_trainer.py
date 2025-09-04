@@ -179,7 +179,7 @@ def swag_train_loop(net, train_loader, val_loader, optimizer, scheduler,
             logger.info(f"Early stopping triggered after {patience} epochs without improvement")
             break
         
-        # Save periodic checkpoint
+        # Save periodic checkpoint every 10 epochs
         if epoch % 10 == 0:
             if epoch >= swag_start:
                 torch.save({
