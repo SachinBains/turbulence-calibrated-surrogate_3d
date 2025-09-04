@@ -35,6 +35,27 @@ def swag_train_loop(net, train_loader, val_loader, optimizer, scheduler,
     swa_model = AveragedModel(net)
     swa_scheduler = SWALR(optimizer, swa_lr=swag_lr, anneal_epochs=10)
     
+    # Resume from checkpoint if provided
+    if resume_path and Path(resume_path).exists():
+        logger.info(f"Resuming from checkpoint: {resume_path}")
+        checkpoint = torch.load(resume_path, map_location=device)
+        
+        start_epoch = checkpoint['epoch'] + 1
+        net.load_state_dict(checkpoint['base_model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        
+        if 'swa_model_state_dict' in checkpoint:
+            # Resuming from SWAG phase
+            swa_model.load_state_dict(checkpoint['swa_model_state_dict'])
+            swa_scheduler.load_state_dict(checkpoint['swa_scheduler_state_dict'])
+            logger.info(f"Resumed SWAG model with {checkpoint['n_averaged']} averaged models")
+        else:
+            # Resuming from pre-SWAG phase
+            scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+            
+        best_val_loss = checkpoint.get('val_loss', float('inf'))
+        logger.info(f"Resumed from epoch {start_epoch}, best_val_loss: {best_val_loss:.6f}")
+    
     # Loss function
     criterion = nn.MSELoss()
     
