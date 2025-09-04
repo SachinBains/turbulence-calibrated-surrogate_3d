@@ -23,7 +23,7 @@ model:
   dropout: 0.0  # No dropout for variational
   batch_norm: true
   activation: relu
-  kl_weight: 0.0000001  # KL divergence weight (1e-7, target: kl_loss = 1-10% of recon_loss)
+  kl_weight: 0.0001  # Starting KL weight (1e-4) - will warm up to 1e-2 over 30 epochs
 
 # Uncertainty quantification
 uq:

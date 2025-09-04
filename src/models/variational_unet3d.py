@@ -63,7 +63,7 @@ class VariationalConv3d(nn.Module):
         weight_kl = 0.5 * torch.sum(
             (self.weight_mu**2 + weight_var) / (self.prior_std**2) - 
             self.weight_logvar + 
-            math.log(self.prior_std**2) - 1
+            2 * math.log(self.prior_std) - 1
         )
         
         # KL divergence for bias
@@ -71,7 +71,7 @@ class VariationalConv3d(nn.Module):
         bias_kl = 0.5 * torch.sum(
             (self.bias_mu**2 + bias_var) / (self.prior_std**2) - 
             self.bias_logvar + 
-            math.log(self.prior_std**2) - 1
+            2 * math.log(self.prior_std) - 1
         )
         
         return weight_kl + bias_kl
@@ -174,15 +174,17 @@ class VariationalUNet3D(nn.Module):
         
         return self.out(d1)
     
-    def kl_divergence(self):
-        """Compute total KL divergence for all variational layers."""
-        kl_div = 0.0
-        
+    def raw_kl_divergence(self):
+        """Compute raw KL divergence for all variational layers (no weighting)."""
+        total_kl = 0.0
         for module in self.modules():
             if isinstance(module, VariationalConv3d):
-                kl_div += module.kl_divergence()
-                
-        return kl_div * self.kl_weight
+                total_kl += module.kl_divergence()
+        return total_kl
+    
+    def kl_divergence(self):
+        """Compute weighted KL divergence (legacy method for backward compatibility)."""
+        return self.kl_weight * self.raw_kl_divergence()
     
     def sample_predictions(self, x, n_samples=100):
         """Generate multiple predictions by sampling from posterior."""
