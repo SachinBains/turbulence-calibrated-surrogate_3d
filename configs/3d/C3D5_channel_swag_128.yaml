@@ -15,7 +15,7 @@ dataset:
   
 # Model architecture (3D U-Net with SWAG)
 model:
-  name: unet3d_swag
+  name: unet3d
   in_channels: 3
   out_channels: 3
   base_channels: 32

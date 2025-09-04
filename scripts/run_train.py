@@ -82,6 +82,10 @@ def main(cfg_path, seed, resume, cuda):
     if uq_method == 'variational':
         from src.train.variational_trainer import variational_train_loop
         best = variational_train_loop(cfg, net, crit, opt, scaler, tl, vl, out, log, resume_path=resume, device=device)
+    elif 'swag' in cfg['experiment_id'].lower():
+        from src.train.swag_trainer import swag_train_loop
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=cfg['train']['epochs'])
+        best = swag_train_loop(net, tl, vl, opt, scheduler, out, log, cfg, resume_path=resume, device=device)
     else:
         best = train_loop(cfg, net, crit, opt, scaler, tl, vl, out, log, resume_path=resume, device=device)
     append_manifest_row(cfg_path, seed_val, str(out))
