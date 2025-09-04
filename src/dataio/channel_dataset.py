@@ -32,11 +32,15 @@ class ChannelDataset(Dataset):
         self.eval_mode = eval_mode
         self.cfg = cfg
         
-        # Find all cube files
-        cube_files = sorted(glob.glob(str(self.data_dir / "cube_64_*.h5")))
+        # Find all cube files - try multiple patterns
+        cube_files = sorted(glob.glob(str(self.data_dir / "ret1000_cube_*.h5")))
+        if not cube_files:
+            cube_files = sorted(glob.glob(str(self.data_dir / "cube_64_*.h5")))
+        if not cube_files:
+            cube_files = sorted(glob.glob(str(self.data_dir / "cube_*.h5")))
         
         if not cube_files:
-            raise ValueError(f"No cube_64_*.h5 files found in {self.data_dir}")
+            raise ValueError(f"No cube files found in {self.data_dir}. Tried patterns: ret1000_cube_*.h5, cube_64_*.h5, cube_*.h5")
         
         # Split data: 70% train, 15% val, 15% test
         n_total = len(cube_files)
