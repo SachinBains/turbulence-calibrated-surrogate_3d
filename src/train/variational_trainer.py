@@ -14,10 +14,10 @@ def variational_train_loop(cfg, net, criterion, optimizer, scaler, train_loader,
     # Calculate total samples per epoch for KL normalization
     samples_per_epoch = len(train_loader) * train_loader.batch_size
     
-    # β warm-up schedule parameters
+    # β warm-up schedule parameters (BNN-appropriate scale)
     warmup_epochs = 30
-    beta_start = 1e-4
-    beta_end = 1e-2
+    beta_start = 1e-7
+    beta_end = 6e-7
     
     # Early stopping
     early_stop = cfg['train'].get('early_stopping', {})
@@ -83,14 +83,16 @@ def variational_train_loop(cfg, net, criterion, optimizer, scaler, train_loader,
             train_kl_per_sample += kl_per_sample.item()
             train_kl_weighted += kl_weighted.item()
             
-            # Log training progress with all KL components
+            # Log training progress with all KL components and ratio
             if batch_idx % log_interval == 0:
+                kl_recon_ratio = kl_weighted.item() / recon_loss.item() if recon_loss.item() > 0 else 0
                 logger.info(
                     f'Step {epoch * len(train_loader) + batch_idx}: '
                     f'recon_loss={recon_loss.item():.6f}, '
                     f'kl_raw={kl_raw.item():.1f}, '
-                    f'kl_per_sample={kl_per_sample.item():.6f}, '
+                    f'kl_per_sample={kl_per_sample.item():.1f}, '
                     f'kl_weighted={kl_weighted.item():.6f}, '
+                    f'kl/recon={kl_recon_ratio:.3f}, '
                     f'total_loss={total_loss.item():.6f}'
                 )
         
