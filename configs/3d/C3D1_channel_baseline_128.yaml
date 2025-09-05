@@ -56,6 +56,12 @@ uq:
   method: none
   dropout_p: 0.0
 
+# Evaluation configuration
+eval:
+  mc_samples: 20
+  temperature_scale: false
+  conformal: false
+
 # Reproducibility
 seed: 42
 deterministic: true

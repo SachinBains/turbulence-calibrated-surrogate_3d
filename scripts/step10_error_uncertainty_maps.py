@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import json
 import pandas as pd
+import os
 from typing import Dict, List, Tuple
 
 def load_prediction_data(step10_dir: Path) -> Dict:
@@ -266,9 +267,10 @@ def main():
     print("=== Step 10: Generate Error and Uncertainty Maps ===\n")
     
     # Setup paths
-    step10_dir = Path("C:/Users/Sachi/OneDrive/Desktop/Dissertation/step10_visualization")
-    output_dir = Path("C:/Users/Sachi/OneDrive/Desktop/Dissertation/turbulence-calibrated-surrogate_full/step10_analysis")
-    output_dir.mkdir(exist_ok=True)
+    artifacts_dir = os.environ.get('ARTIFACTS_DIR', '/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d')
+    step10_dir = Path(artifacts_dir) / "step10_visualization"
+    output_dir = Path(artifacts_dir) / "analysis" / "step10_analysis"
+    output_dir.mkdir(parents=True, exist_ok=True)
     
     # Load prediction data
     print("1. Loading prediction arrays...")

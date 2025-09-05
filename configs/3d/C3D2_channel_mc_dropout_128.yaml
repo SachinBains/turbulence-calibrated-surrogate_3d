@@ -59,6 +59,12 @@ dataloader:
 validation:
   frequency: 5
   metrics: [rmse, mae, r2, nll, coverage]
+
+# Evaluation configuration
+eval:
+  mc_samples: 100
+  temperature_scale: false
+  conformal: false
   
 # Paths (3D track artifacts)
 paths:
