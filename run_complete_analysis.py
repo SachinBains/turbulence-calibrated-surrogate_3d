@@ -23,12 +23,13 @@ logging.basicConfig(
 
 def run_script(script_name, args, description=""):
     """Run a script with error handling and logging"""
-    cmd = f"python scripts/{script_name} {args}"
+    # Activate virtual environment and run script with PYTHONPATH
+    cmd = f"source ~/venvs/turbml/bin/activate && export PYTHONPATH=$PWD:$PYTHONPATH && python scripts/{script_name} {args}"
     logging.info(f"Running: {description}")
     logging.info(f"Command: {cmd}")
     
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=".")
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=".", executable='/bin/bash')
         if result.returncode == 0:
             logging.info(f"✓ SUCCESS: {description}")
             if result.stdout:
