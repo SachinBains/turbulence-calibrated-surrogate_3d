@@ -74,27 +74,25 @@ def main():
             config_path = f"configs/3d/{model}.yaml"
             
             # Run evaluation
-            artifacts_dir = "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d"
             run_script("run_eval.py", 
-                      f"--config {config_path} --artifacts_dir {artifacts_dir}",
+                      f"--config {config_path}",
                       f"Basic evaluation for {model}")
             
             # Generate predictions for ensemble/MC methods
-            artifacts_dir = "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d"
             if "ensemble" in model:
                 run_script("predict_ens.py",
-                          f"--config {config_path} --artifacts_dir {artifacts_dir}",
+                          f"--config {config_path}",
                           f"Ensemble predictions for {model}")
             elif "mc_dropout" in model:
                 run_script("predict_mc.py",
-                          f"--config {config_path} --artifacts_dir {artifacts_dir}",
+                          f"--config {config_path}",
                           f"MC Dropout predictions for {model}")
             
             # Error analysis
             artifacts_dir = "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d"
             results_dir = f"{artifacts_dir}/results/{model}"
             run_script("run_error_analysis.py",
-                      f"--config {config_path} --results_dir {results_dir} --artifacts_dir {artifacts_dir}",
+                      f"--config {config_path} --results_dir {results_dir}",
                       f"Error analysis for {model}")
     
     # Phase 2: Visualizations
@@ -110,17 +108,17 @@ def main():
             artifacts_dir = "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d"
             results_dir = f"{artifacts_dir}/results/{model}"
             run_script("make_slice_maps.py",
-                      f"--config {config_path} --results_dir {results_dir} --artifacts_dir {artifacts_dir}",
+                      f"--config {config_path} --results_dir {results_dir}",
                       f"Slice maps for {model}")
             
             # Training figures
             run_script("make_figures.py",
-                      f"--config {config_path} --results_dir {results_dir} --artifacts_dir {artifacts_dir}",
+                      f"--config {config_path} --results_dir {results_dir}",
                       f"Training figures for {model}")
             
             # Error and uncertainty maps
             run_script("step10_error_uncertainty_maps.py",
-                      f"--config {config_path} --results_dir {results_dir} --artifacts_dir {artifacts_dir}",
+                      f"--config {config_path} --results_dir {results_dir}",
                       f"Error/uncertainty maps for {model}")
     
     # Phase 3: Interpretability Analysis
