@@ -23,8 +23,9 @@ logging.basicConfig(
 
 def run_script(script_name, args, description=""):
     """Run a script with error handling and logging"""
-    # Activate virtual environment and run script with PYTHONPATH
-    cmd = f"source ~/venvs/turbml/bin/activate && export PYTHONPATH=$PWD:$PYTHONPATH && python scripts/{script_name} {args}"
+    # Set artifacts directory and activate virtual environment
+    artifacts_dir = "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d"
+    cmd = f"source ~/venvs/turbml/bin/activate && export PYTHONPATH=$PWD:$PYTHONPATH && export ARTIFACTS_DIR={artifacts_dir} && python scripts/{script_name} {args}"
     logging.info(f"Running: {description}")
     logging.info(f"Command: {cmd}")
     
@@ -73,23 +74,27 @@ def main():
             config_path = f"configs/3d/{model}.yaml"
             
             # Run evaluation
+            artifacts_dir = "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d"
             run_script("run_eval.py", 
-                      f"--config {config_path}",
+                      f"--config {config_path} --artifacts_dir {artifacts_dir}",
                       f"Basic evaluation for {model}")
             
             # Generate predictions for ensemble/MC methods
+            artifacts_dir = "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d"
             if "ensemble" in model:
                 run_script("predict_ens.py",
-                          f"--config {config_path}",
+                          f"--config {config_path} --artifacts_dir {artifacts_dir}",
                           f"Ensemble predictions for {model}")
             elif "mc_dropout" in model:
                 run_script("predict_mc.py",
-                          f"--config {config_path}",
+                          f"--config {config_path} --artifacts_dir {artifacts_dir}",
                           f"MC Dropout predictions for {model}")
             
             # Error analysis
+            artifacts_dir = "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d"
+            results_dir = f"{artifacts_dir}/results/{model}"
             run_script("run_error_analysis.py",
-                      f"--config {config_path}",
+                      f"--config {config_path} --results_dir {results_dir} --artifacts_dir {artifacts_dir}",
                       f"Error analysis for {model}")
     
     # Phase 2: Visualizations
@@ -102,18 +107,20 @@ def main():
             config_path = f"configs/3d/{model}.yaml"
             
             # Slice maps
+            artifacts_dir = "/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d"
+            results_dir = f"{artifacts_dir}/results/{model}"
             run_script("make_slice_maps.py",
-                      f"--config {config_path}",
+                      f"--config {config_path} --results_dir {results_dir} --artifacts_dir {artifacts_dir}",
                       f"Slice maps for {model}")
             
             # Training figures
             run_script("make_figures.py",
-                      f"--config {config_path}",
+                      f"--config {config_path} --results_dir {results_dir} --artifacts_dir {artifacts_dir}",
                       f"Training figures for {model}")
             
             # Error and uncertainty maps
             run_script("step10_error_uncertainty_maps.py",
-                      f"--config {config_path}",
+                      f"--config {config_path} --results_dir {results_dir} --artifacts_dir {artifacts_dir}",
                       f"Error/uncertainty maps for {model}")
     
     # Phase 3: Interpretability Analysis
