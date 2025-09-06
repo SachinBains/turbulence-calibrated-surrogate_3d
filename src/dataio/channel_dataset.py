@@ -32,15 +32,30 @@ class ChannelDataset(Dataset):
         self.eval_mode = eval_mode
         self.cfg = cfg
         
-        # Find all cube files - try multiple patterns
-        cube_files = sorted(glob.glob(str(self.data_dir / "ret1000_cube_*.h5")))
-        if not cube_files:
-            cube_files = sorted(glob.glob(str(self.data_dir / "cube_64_*.h5")))
-        if not cube_files:
-            cube_files = sorted(glob.glob(str(self.data_dir / "cube_*.h5")))
+        # Find all cube files - handle both single directory and batch structure
+        cube_files = []
+        
+        # Check if we have batch directories (Re1000_Batch1_Data2, etc.)
+        batch_dirs = sorted(self.data_dir.glob("Re1000_Batch*_Data*"))
+        
+        if batch_dirs:
+            print(f"Found {len(batch_dirs)} batch directories for Y+ bands")
+            for batch_dir in batch_dirs:
+                batch_files = sorted(glob.glob(str(batch_dir / "ret1000_cube_*.h5")))
+                if not batch_files:
+                    batch_files = sorted(glob.glob(str(batch_dir / "cube_*.h5")))
+                cube_files.extend(batch_files)
+                print(f"  {batch_dir.name}: {len(batch_files)} files")
+        else:
+            # Single directory structure (fallback)
+            cube_files = sorted(glob.glob(str(self.data_dir / "ret1000_cube_*.h5")))
+            if not cube_files:
+                cube_files = sorted(glob.glob(str(self.data_dir / "cube_64_*.h5")))
+            if not cube_files:
+                cube_files = sorted(glob.glob(str(self.data_dir / "cube_*.h5")))
         
         if not cube_files:
-            raise ValueError(f"No cube files found in {self.data_dir}. Tried patterns: ret1000_cube_*.h5, cube_64_*.h5, cube_*.h5")
+            raise ValueError(f"No cube files found in {self.data_dir} or batch subdirectories")
         
         # Split data: 70% train, 15% val, 15% test
         n_total = len(cube_files)
@@ -54,7 +69,7 @@ class ChannelDataset(Dataset):
         else:  # test
             self.cube_files = cube_files[n_train+n_val:]
         
-        print(f"ChannelDataset {split}: {len(self.cube_files)} files")
+        print(f"ChannelDataset {split}: {len(self.cube_files)} files (total dataset: {len(cube_files)} files)")
         
         # Compute normalization stats
         self._compute_stats()
