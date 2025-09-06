@@ -111,7 +111,13 @@ class ChannelDataset(Dataset):
         cube_file = self.cube_files[idx]
         
         with h5py.File(cube_file, 'r') as f:
-            velocity = f['velocity'][:]  # Shape: (64, 64, 64, 3)
+            # Try different velocity keys based on file format
+            if 'velocity' in f:
+                velocity = f['velocity'][:]  # Original format
+            elif 'u' in f:
+                velocity = f['u'][:]  # JHTDB format: (96, 96, 96, 3)
+            else:
+                raise KeyError(f"No velocity data found in {cube_file}. Available keys: {list(f.keys())}")
         
         # Normalize
         velocity = (velocity - self.velocity_mean) / (self.velocity_std + 1e-8)
