@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
 #SBATCH --mem=32G
-#SBATCH --time=72:00:00
+#SBATCH --time=18:00:00
 #SBATCH --output=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs/training/C3D3_primary_%j.out
 #SBATCH --error=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs/training/C3D3_primary_%j.err
 
@@ -23,4 +23,4 @@ cd /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_3d
 export PYTHONPATH=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_3d:$PYTHONPATH
 
 # Run ensemble training
-python scripts/run_train_ens.py --config configs/3d_primary/C3D3_channel_primary_1000.yaml --seed 42 --cuda
+python scripts/run_train_ens.py --config configs/3d_primary/C3D3_channel_primary_1000.yaml --cuda
