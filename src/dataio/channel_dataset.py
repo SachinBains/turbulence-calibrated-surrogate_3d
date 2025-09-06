@@ -44,6 +44,8 @@ class ChannelDataset(Dataset):
                 batch_files = sorted(glob.glob(str(batch_dir / "ret1000_cube_*.h5")))
                 if not batch_files:
                     batch_files = sorted(glob.glob(str(batch_dir / "cube_*.h5")))
+                if not batch_files:
+                    batch_files = sorted(glob.glob(str(batch_dir / "chan96_*.h5")))
                 cube_files.extend(batch_files)
                 print(f"  {batch_dir.name}: {len(batch_files)} files")
         else:
@@ -53,6 +55,8 @@ class ChannelDataset(Dataset):
                 cube_files = sorted(glob.glob(str(self.data_dir / "cube_64_*.h5")))
             if not cube_files:
                 cube_files = sorted(glob.glob(str(self.data_dir / "cube_*.h5")))
+            if not cube_files:
+                cube_files = sorted(glob.glob(str(self.data_dir / "chan96_*.h5")))
         
         if not cube_files:
             raise ValueError(f"No cube files found in {self.data_dir} or batch subdirectories")
