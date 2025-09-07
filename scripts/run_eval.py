@@ -15,11 +15,14 @@ from src.eval.conformal import conformal_wrap
 def main(cfg_path, seed, mc_samples, temperature_scale, conformal, cuda):
   cfg=load_config(cfg_path); seed_all(seed or cfg.get('seed',42)); log=get_logger()
   exp_id=cfg.get('experiment_id','EXPERIMENT'); out=Path(cfg['paths']['results_dir'])/exp_id
-  # Handle different directory structures
-  if 'ensemble' in exp_id.lower() and (out / exp_id / 'members').exists():
-      out = out / exp_id / 'members'
-  elif (out / exp_id).exists():
-      out = out / exp_id
+  # Handle ensemble case - use first member directory
+  if 'ensemble' in exp_id.lower():
+      members_dir = out / exp_id / 'members'
+      if members_dir.exists():
+          member_dirs = sorted([d for d in members_dir.iterdir() if d.is_dir() and d.name.startswith('m')])
+          if member_dirs:
+              out = member_dirs[0]  # Use first member (m00)
+  # For non-ensemble cases, stay in base directory
   out.mkdir(parents=True,exist_ok=True)
   val=ChannelDataset(cfg,'val'); test=ChannelDataset(cfg, 'test')
   vl=DataLoader(val,batch_size=1,shuffle=False); tl=DataLoader(test,batch_size=1,shuffle=False)
