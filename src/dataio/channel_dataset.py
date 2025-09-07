@@ -63,7 +63,7 @@ class ChannelDataset(Dataset):
             raise ValueError(f"No cube files found in {self.data_dir} or batch subdirectories")
         
         # Use stratified splits if available, otherwise fall back to simple splitting
-        splits_dir = Path("splits")
+        splits_dir = Path("/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/datasets/channel3d/splits")
         train_split_file = splits_dir / "channel_train_idx.npy"
         
         if train_split_file.exists():
@@ -105,7 +105,7 @@ class ChannelDataset(Dataset):
         """Compute normalization statistics following thesis methodology."""
         
         # Check if we should compute stats or load pre-computed ones
-        stats_file = Path("splits") / "channel_normalization_stats.npz"
+        stats_file = Path("/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/datasets/channel3d/splits") / "channel_normalization_stats.npz"
         
         if self.split == 'train' or not stats_file.exists():
             # Compute stats from ALL training files (thesis methodology)
@@ -122,11 +122,30 @@ class ChannelDataset(Dataset):
                         if 'velocity' in f:
                             velocity = f['velocity'][:]
                         elif 'u' in f:
-                            # Combine u, v, w components
-                            u = f['u'][:]
-                            v = f['v'][:]
-                            w = f['w'][:]
-                            velocity = np.stack([u, v, w], axis=-1)
+                            # Check what velocity components are available
+                            available_keys = list(f.keys())
+                            print(f"Available keys in {self.cube_files[i]}: {available_keys}")
+                            
+                            # Try to load available velocity components
+                            velocity_components = []
+                            for comp in ['u', 'v', 'w']:
+                                if comp in f:
+                                    velocity_components.append(f[comp][:])
+                                else:
+                                    print(f"Warning: Component '{comp}' not found in {self.cube_files[i]}")
+                            
+                            if len(velocity_components) == 0:
+                                print(f"Warning: No velocity components found in {self.cube_files[i]}")
+                                continue
+                            elif len(velocity_components) == 1:
+                                # Only one component available (likely 'u')
+                                velocity = velocity_components[0]
+                                if len(velocity.shape) == 3:
+                                    # Add channel dimension if missing
+                                    velocity = velocity[..., np.newaxis]
+                            else:
+                                # Multiple components available
+                                velocity = np.stack(velocity_components, axis=-1)
                         else:
                             print(f"Warning: No velocity data found in {self.cube_files[i]}")
                             continue
