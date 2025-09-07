@@ -16,7 +16,7 @@ dataset:
 # Model architecture (3D U-Net Ensemble)
 model:
   name: unet3d_ensemble
-  in_channels: 3
+  in_channels: 3  # u, v, w only
   out_channels: 3
   base_channels: 32
   depth: 4

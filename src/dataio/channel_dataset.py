@@ -118,36 +118,17 @@ class ChannelDataset(Dataset):
             for i in range(max_files):
                 try:
                     with h5py.File(self.cube_files[i], 'r') as f:
-                        # Handle different possible keys
+                        # JHTDB channel flow format: /velocity dataset with shape (Nx, Ny, Nz, 3)
+                        # Channel order: (u, v, w) with indices u=0, v=1, w=2
                         if 'velocity' in f:
                             velocity = f['velocity'][:]
-                        elif 'u' in f:
-                            # Check what velocity components are available
-                            available_keys = list(f.keys())
-                            print(f"Available keys in {self.cube_files[i]}: {available_keys}")
-                            
-                            # Try to load available velocity components
-                            velocity_components = []
-                            for comp in ['u', 'v', 'w']:
-                                if comp in f:
-                                    velocity_components.append(f[comp][:])
-                                else:
-                                    print(f"Warning: Component '{comp}' not found in {self.cube_files[i]}")
-                            
-                            if len(velocity_components) == 0:
-                                print(f"Warning: No velocity components found in {self.cube_files[i]}")
+                            # Verify shape matches specification
+                            if velocity.shape != (96, 96, 96, 3):
+                                print(f"Warning: Expected velocity shape (96, 96, 96, 3), got {velocity.shape} in {self.cube_files[i]}")
                                 continue
-                            elif len(velocity_components) == 1:
-                                # Only one component available (likely 'u')
-                                velocity = velocity_components[0]
-                                if len(velocity.shape) == 3:
-                                    # Add channel dimension if missing
-                                    velocity = velocity[..., np.newaxis]
-                            else:
-                                # Multiple components available
-                                velocity = np.stack(velocity_components, axis=-1)
                         else:
-                            print(f"Warning: No velocity data found in {self.cube_files[i]}")
+                            available_keys = list(f.keys())
+                            print(f"Warning: No /velocity dataset found in {self.cube_files[i]}. Available keys: {available_keys}")
                             continue
                             
                         velocities.append(velocity)
@@ -200,13 +181,15 @@ class ChannelDataset(Dataset):
         cube_file = self.cube_files[idx]
         
         with h5py.File(cube_file, 'r') as f:
-            # Try different velocity keys based on file format
+            # JHTDB channel flow format: /velocity dataset with shape (Nx, Ny, Nz, 3)
+            # Channel order: (u, v, w) with indices u=0, v=1, w=2
             if 'velocity' in f:
-                velocity = f['velocity'][:]  # Original format
-            elif 'u' in f:
-                velocity = f['u'][:]  # JHTDB format: (96, 96, 96, 3)
+                velocity = f['velocity'][:]  # JHTDB format: (96, 96, 96, 3)
+                # Verify shape matches specification
+                if velocity.shape != (96, 96, 96, 3):
+                    raise ValueError(f"Expected velocity shape (96, 96, 96, 3), got {velocity.shape} in {cube_file}")
             else:
-                raise KeyError(f"No velocity data found in {cube_file}. Available keys: {list(f.keys())}")
+                raise KeyError(f"No /velocity dataset found in {cube_file}. Available keys: {list(f.keys())}. Expected JHTDB format with /velocity dataset.")
         
         # Normalize
         velocity = (velocity - self.mean) / (self.std + 1e-8)
