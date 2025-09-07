@@ -44,9 +44,20 @@ def main():
     
     # Load model
     results_dir = Path(cfg['paths']['results_dir']) / exp_id
-    ckpts = sorted(results_dir.glob('best_*.pth'))
+    checkpoint_patterns = ['best_*.pth', 'best_model.pth', 'model_*.pth', '*.pth']
+ckpt = None
     
-    if not ckpts:
+    for pattern in checkpoint_patterns:
+        ckpts = sorted(results_dir.glob(pattern))
+        if ckpts:
+            if pattern == '*.pth':
+                ckpts = [f for f in ckpts if any(word in f.name.lower() 
+                                               for word in ['best', 'model', 'checkpoint', 'final'])]
+            if ckpts:
+                ckpt = ckpts[-1]
+                break
+    
+    if not ckpt:
         print(f"No checkpoint found in {results_dir}")
         return
     
@@ -59,12 +70,12 @@ def main():
     )
     
     # Load weights
-    state = torch.load(ckpts[-1], map_location=device)
+    state = torch.load(ckpt, map_location=device)
     model.load_state_dict(state['model'])
     model = model.to(device)
     model.eval()
     
-    print(f"Loaded model from: {ckpts[-1]}")
+    print(f"Loaded model from: {ckpt}")
     
     # Load dataset
     dataset = ChannelDataset(cfg, args.split, eval_mode=True)
