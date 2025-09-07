@@ -27,8 +27,8 @@ echo "Node: $(hostname)"
 # Create analysis output directory
 mkdir -p $ARTIFACTS_ROOT/analysis/smoke_test_complete
 
-# Run the existing step13 interpretability analysis for all smoke test experiments
-python scripts/step13_interpretability_analysis.py \
+# Run complete analysis pipeline for all smoke test experiments
+python scripts/run_complete_analysis.py \
     --base_dir $ARTIFACTS_ROOT \
     --output_dir $ARTIFACTS_ROOT/analysis/smoke_test_complete \
     --experiments C3D1_channel_baseline_128 C3D2_channel_mc_dropout_128 C3D3_channel_ensemble_128 C3D4_channel_variational_128 C3D5_channel_swag_128 C3D6_channel_physics_informed_128 \
