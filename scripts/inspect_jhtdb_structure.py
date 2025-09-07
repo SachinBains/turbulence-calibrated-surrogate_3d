@@ -71,7 +71,7 @@ def analyze_jhtdb_physics(file_path):
                     print(f"    -> Likely spatial index, range: {data[...].min()} to {data[...].max()}")
                 
                 # Check if this looks like velocity
-                elif key in ['u', v', 'w'] or 'velocity' in key.lower():
+                elif key in ['u', 'v', 'w'] or 'velocity' in key.lower():
                     print(f"    -> Likely velocity component")
                     print(f"       Raw range: {data[...].min():.6f} to {data[...].max():.6f}")
                     print(f"       Scaled by u_tau: {data[...].min()/u_tau:.6f} to {data[...].max()/u_tau:.6f}")
