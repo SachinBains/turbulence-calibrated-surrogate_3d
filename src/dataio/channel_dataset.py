@@ -209,7 +209,7 @@ class ChannelDataset(Dataset):
                 raise KeyError(f"No velocity data found in {cube_file}. Available keys: {list(f.keys())}")
         
         # Normalize
-        velocity = (velocity - self.velocity_mean) / (self.velocity_std + 1e-8)
+        velocity = (velocity - self.mean) / (self.std + 1e-8)
         
         # Convert to torch tensor: (3, 64, 64, 64)
         velocity_tensor = torch.from_numpy(velocity).float().permute(3, 0, 1, 2)
@@ -217,7 +217,7 @@ class ChannelDataset(Dataset):
         # Return (x, y) tuple for compatibility with HITDataset interface
         if self.eval_mode:
             # In eval mode, return denormalized data for ground truth comparison
-            velocity_denorm = velocity * (self.velocity_std + 1e-8) + self.velocity_mean
+            velocity_denorm = velocity * (self.std + 1e-8) + self.mean
             velocity_denorm_tensor = torch.from_numpy(velocity_denorm).float().permute(3, 0, 1, 2)
             return velocity_tensor, velocity_denorm_tensor
         else:
