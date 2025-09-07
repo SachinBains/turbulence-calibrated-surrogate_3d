@@ -21,10 +21,6 @@ def load_model_for_config(cfg, device):
     # For now, always use standard UNet3D (variational will be handled by state dict conversion)
     net = UNet3D(mcfg['in_channels'], mcfg['out_channels'], base_ch=mcfg['base_channels'])
     print("Loaded standard UNet3D model")
-    else:
-        # Standard UNet3D for all other cases
-        net = UNet3D(mcfg['in_channels'], mcfg['out_channels'], base_ch=mcfg['base_channels'])
-        print("Loaded standard UNet3D model")
     
     return net
 
@@ -159,7 +155,7 @@ def main(cfg_path, seed, mc_samples, temperature_scale, conformal, cuda):
     net = load_model_for_config(cfg, None)  # Don't move to device yet
     
     # Clean state dict based on model type
-    cleaned_state = clean_state_dict(model_state, model_type, net)
+    cleaned_state = clean_state_dict(model_state, model_type)
     
     # Load state dict with error handling
     try:
