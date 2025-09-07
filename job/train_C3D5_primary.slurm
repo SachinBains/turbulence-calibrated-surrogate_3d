@@ -23,4 +23,4 @@ cd /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_3d
 export PYTHONPATH=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_3d:$PYTHONPATH
 
 # Run SWAG training
-python scripts/run_train.py --config configs/3d_primary/C3D5_channel_primary_1000.yaml --cuda
+python scripts/run_train.py --config configs/3d_primary/C3D5_channel_swag_primary_1000.yaml --cuda
