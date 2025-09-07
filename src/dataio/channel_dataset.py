@@ -118,17 +118,17 @@ class ChannelDataset(Dataset):
             for i in range(max_files):
                 try:
                     with h5py.File(self.cube_files[i], 'r') as f:
-                        # JHTDB channel flow format: /velocity dataset with shape (Nx, Ny, Nz, 3)
+                        # JHTDB channel flow format: 'u' dataset with shape (96, 96, 96, 3)
                         # Channel order: (u, v, w) with indices u=0, v=1, w=2
-                        if 'velocity' in f:
-                            velocity = f['velocity'][:]
+                        if 'u' in f:
+                            velocity = f['u'][:]
                             # Verify shape matches specification
                             if velocity.shape != (96, 96, 96, 3):
                                 print(f"Warning: Expected velocity shape (96, 96, 96, 3), got {velocity.shape} in {self.cube_files[i]}")
                                 continue
                         else:
                             available_keys = list(f.keys())
-                            print(f"Warning: No /velocity dataset found in {self.cube_files[i]}. Available keys: {available_keys}")
+                            print(f"Warning: No 'u' dataset found in {self.cube_files[i]}. Available keys: {available_keys}")
                             continue
                             
                         velocities.append(velocity)
@@ -181,20 +181,20 @@ class ChannelDataset(Dataset):
         cube_file = self.cube_files[idx]
         
         with h5py.File(cube_file, 'r') as f:
-            # JHTDB channel flow format: /velocity dataset with shape (Nx, Ny, Nz, 3)
+            # JHTDB channel flow format: 'u' dataset with shape (96, 96, 96, 3)
             # Channel order: (u, v, w) with indices u=0, v=1, w=2
-            if 'velocity' in f:
-                velocity = f['velocity'][:]  # JHTDB format: (96, 96, 96, 3)
+            if 'u' in f:
+                velocity = f['u'][:]  # JHTDB format: (96, 96, 96, 3)
                 # Verify shape matches specification
                 if velocity.shape != (96, 96, 96, 3):
                     raise ValueError(f"Expected velocity shape (96, 96, 96, 3), got {velocity.shape} in {cube_file}")
             else:
-                raise KeyError(f"No /velocity dataset found in {cube_file}. Available keys: {list(f.keys())}. Expected JHTDB format with /velocity dataset.")
+                raise KeyError(f"No 'u' dataset found in {cube_file}. Available keys: {list(f.keys())}. Expected JHTDB format with 'u' dataset containing full 3D velocity field.")
         
         # Normalize
         velocity = (velocity - self.mean) / (self.std + 1e-8)
         
-        # Convert to torch tensor: (3, 64, 64, 64)
+        # Convert to torch tensor: (3, 96, 96, 96)
         velocity_tensor = torch.from_numpy(velocity).float().permute(3, 0, 1, 2)
         
         # Return (x, y) tuple for compatibility with HITDataset interface
