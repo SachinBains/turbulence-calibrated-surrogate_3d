@@ -59,14 +59,42 @@ def main():
     
     cfg = load_config(args.config)
     exp_id = cfg['experiment_id']
-    results_dir = Path(cfg['paths']['results_dir']) / exp_id
     
-    # Handle directory structure
-    if not results_dir.exists():
-        # Try alternative structure
-        results_dir = results_dir / exp_id
-        if not results_dir.exists():
-            raise FileNotFoundError(f"Results directory not found: {results_dir}")
+    # The results_dir in config already includes the experiment ID
+    results_dir = Path(cfg['paths']['results_dir'])
+    
+    # Handle different possible directory structures
+    possible_dirs = [
+        results_dir,                    # Direct path from config
+        results_dir / exp_id,           # Add exp_id once
+        results_dir.parent / exp_id     # Use parent dir + exp_id
+    ]
+    
+    # Find which directory actually exists and has checkpoints
+    final_results_dir = None
+    for check_dir in possible_dirs:
+        if check_dir.exists():
+            # Check if this directory has any checkpoint files
+            checkpoint_patterns = ['best_*.pth', 'best_model.pth', 'model_*.pth', '*.pth']
+            has_checkpoint = False
+            for pattern in checkpoint_patterns:
+                if list(check_dir.glob(pattern)):
+                    has_checkpoint = True
+                    break
+            
+            if has_checkpoint:
+                final_results_dir = check_dir
+                break
+            else:
+                print(f"Directory exists but no checkpoints found: {check_dir}")
+    
+    if final_results_dir is None:
+        print("Tried these directories:")
+        for d in possible_dirs:
+            print(f"  - {d} (exists: {d.exists()})")
+        raise FileNotFoundError(f"No valid results directory found with checkpoints")
+    
+    results_dir = final_results_dir
     
     print(f"Looking for checkpoint in: {results_dir}")
     
