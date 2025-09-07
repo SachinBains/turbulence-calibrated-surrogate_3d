@@ -60,6 +60,7 @@ def main():
     y_true = np.concatenate(y_true, axis=0)
     
     # Compute metrics
+    np.save(save_dir / f'gt_{args.split}.npy', y_true)
     metrics = compute_ensemble_metrics(ens_mean, y_true)
 
     # Apply conformal prediction if requested
