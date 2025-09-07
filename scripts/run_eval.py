@@ -27,6 +27,10 @@ def main(cfg_path, seed, mc_samples, temperature_scale, conformal, cuda):
   # Handle different checkpoint formats
   if 'model' in state:
       net.load_state_dict(state['model'])
+  elif 'swa_model_state_dict' in state:
+      net.load_state_dict(state['swa_model_state_dict'])
+  elif 'model_state_dict' in state:
+      net.load_state_dict(state['model_state_dict'])
   else:
       net.load_state_dict(state)
   if cfg['uq'].get('method','none')=='mc_dropout': net.enable_mc_dropout(p=cfg['uq'].get('dropout_p',0.2))
