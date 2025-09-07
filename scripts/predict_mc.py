@@ -146,6 +146,7 @@ def main():
 
     # Ground truth & metrics
     y_true = concat_targets(loader)
+    np.save(os.path.join(resdir, f'gt_{args.split}.npy'), y_true)
     metrics = save_metrics(figdir, resdir, args.split, y_true, mu, var)
     
     # Add conformal coverage metrics if applied
