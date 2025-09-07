@@ -42,11 +42,45 @@ def physics_informed_loss(pred, target, dx=1.0, dy=1.0, dz=1.0, physics_weight=0
     
     return total_loss, data_loss, physics_loss, continuity_loss
 
+def variational_elbo_loss(pred, target, model, kl_weight=1e-5):
+    """
+    Variational ELBO loss = reconstruction loss + weighted KL divergence
+    
+    Args:
+        pred: Model predictions [B, C, D, H, W]
+        target: Ground truth [B, C, D, H, W] 
+        model: Variational model with raw_kl_divergence() method
+        kl_weight: Weight for KL divergence term
+    
+    Returns:
+        total_loss: ELBO loss
+        recon_loss: Reconstruction loss component
+        kl_loss: KL divergence component
+    """
+    # Reconstruction loss (MSE between prediction and target)
+    recon_loss = nn.MSELoss()(pred, target)
+    
+    # KL divergence from variational model (unweighted)
+    kl_div = model.raw_kl_divergence()
+    
+    # ELBO = reconstruction_loss + kl_weight * KL_divergence
+    total_loss = recon_loss + kl_weight * kl_div
+    
+    return total_loss, recon_loss, kl_div
+
 def make_loss(cfg):
   spectral=cfg['model'].get('spectral_loss',False); w=float(cfg['model'].get('spectral_weight',0.0))
-  name=cfg['train'].get('loss','mse').lower()
+  name=cfg['loss'].get('name','mse').lower()  # Updated to use cfg['loss']['name']
   
-  if name=='physics_informed':
+  if name=='variational_elbo':
+    kl_weight = cfg['model'].get('kl_weight', 1e-5)
+    def fn(pred, y, model=None):
+      if model is None:
+        raise ValueError("Variational ELBO loss requires model parameter")
+      total_loss, recon_loss, kl_div = variational_elbo_loss(pred, y, model, kl_weight)
+      return total_loss
+    return fn
+  elif name=='physics_informed':
     physics_weight = cfg['train'].get('physics_weight', 0.1)
     continuity_weight = cfg['train'].get('continuity_weight', 0.05)
     momentum_weight = cfg['train'].get('momentum_weight', 0.05)
