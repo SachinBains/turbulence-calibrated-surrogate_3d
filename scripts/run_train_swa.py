@@ -34,10 +34,9 @@ def build_model(cfg: dict, device: torch.device) -> nn.Module:
     dropout_p = cfg.get('uq', {}).get('dropout_p', 0.0)
     
     model = UNet3D(
-        in_channels=model_cfg['in_channels'],
-        out_channels=model_cfg['out_channels'],
-        base_channels=model_cfg['base_channels'],
-        dropout_p=dropout_p
+        model_cfg['in_channels'],
+        model_cfg['out_channels'],
+        base_ch=model_cfg['base_channels']
     ).to(device)
     
     return model
