@@ -199,7 +199,59 @@ def save_ensemble_outputs(save_dir, ensemble_mean, ensemble_var, ensemble_std, t
     np.save(save_dir / 'targets.npy', targets)
     np.save(save_dir / 'inputs.npy', inputs)
     
+    # Save central slice visualizations
+    try:
+        save_central_slices(save_dir, ensemble_mean, ensemble_std, targets, inputs)
+    except Exception as e:
+        print(f"Warning: Could not save central slices: {e}")
+    
     print(f"Saved ensemble outputs to {save_dir}")
+
+def save_central_slices(save_dir, predictions, uncertainty, targets, inputs):
+    """Save central slice visualizations for ensemble results."""
+    import matplotlib.pyplot as plt
+    
+    # Take first sample and middle slice
+    if len(predictions.shape) == 5:  # [batch, channels, depth, height, width]
+        sample_idx = 0
+        depth_center = predictions.shape[2] // 2
+        
+        pred_slice = predictions[sample_idx, :, depth_center, :, :]  # [channels, H, W]
+        unc_slice = uncertainty[sample_idx, :, depth_center, :, :]   # [channels, H, W] 
+        target_slice = targets[sample_idx, :, depth_center, :, :]    # [channels, H, W]
+        input_slice = inputs[sample_idx, :, depth_center, :, :]      # [channels, H, W]
+        
+        # Create visualization for each velocity component
+        for ch in range(pred_slice.shape[0]):
+            fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+            
+            # Input
+            im1 = axes[0,0].imshow(input_slice[ch], cmap='RdBu_r')
+            axes[0,0].set_title(f'Input (Channel {ch})')
+            plt.colorbar(im1, ax=axes[0,0])
+            
+            # Target
+            im2 = axes[0,1].imshow(target_slice[ch], cmap='RdBu_r')
+            axes[0,1].set_title(f'Target (Channel {ch})')
+            plt.colorbar(im2, ax=axes[0,1])
+            
+            # Ensemble Prediction
+            im3 = axes[1,0].imshow(pred_slice[ch], cmap='RdBu_r')
+            axes[1,0].set_title(f'Ensemble Prediction (Channel {ch})')
+            plt.colorbar(im3, ax=axes[1,0])
+            
+            # Uncertainty
+            im4 = axes[1,1].imshow(unc_slice[ch], cmap='plasma')
+            axes[1,1].set_title(f'Predictive Uncertainty (Channel {ch})')
+            plt.colorbar(im4, ax=axes[1,1])
+            
+            plt.tight_layout()
+            plt.savefig(save_dir / f'central_slice_channel_{ch}.png', dpi=150, bbox_inches='tight')
+            plt.close()
+            
+        print(f"Saved central slice visualizations to {save_dir}")
+    else:
+        print(f"Unexpected prediction shape: {predictions.shape}, skipping slice visualization")
 
 def main(cfg_path, seed, mc_samples, temperature_scale, conformal, cuda):
     cfg = load_config(cfg_path)
