@@ -23,7 +23,12 @@ def main(cfg_path, seed, mc_samples, temperature_scale, conformal, cuda):
   ckpt = best_ckpts[-1]
   mcfg = cfg['model']
   net = UNet3D(mcfg['in_channels'], mcfg['out_channels'], base_ch=mcfg['base_channels'])
-  state = torch.load(ckpt, map_location='cpu'); net.load_state_dict(state['model'])
+  state = torch.load(ckpt, map_location='cpu', weights_only=False)
+  # Handle different checkpoint formats
+  if 'model' in state:
+      net.load_state_dict(state['model'])
+  else:
+      net.load_state_dict(state)
   if cfg['uq'].get('method','none')=='mc_dropout': net.enable_mc_dropout(p=cfg['uq'].get('dropout_p',0.2))
   device = pick_device(cuda)
   net = net.to(device)
