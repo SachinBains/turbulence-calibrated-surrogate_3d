@@ -14,7 +14,13 @@ from src.eval.conformal import conformal_wrap
 
 def main(cfg_path, seed, mc_samples, temperature_scale, conformal, cuda):
   cfg=load_config(cfg_path); seed_all(seed or cfg.get('seed',42)); log=get_logger()
-  exp_id=cfg.get('experiment_id','EXPERIMENT'); out=Path(cfg['paths']['results_dir'])/exp_id; out.mkdir(parents=True,exist_ok=True)
+  exp_id=cfg.get('experiment_id','EXPERIMENT'); out=Path(cfg['paths']['results_dir'])/exp_id
+  # Handle different directory structures
+  if 'ensemble' in exp_id.lower() and (out / exp_id / 'members').exists():
+      out = out / exp_id / 'members'
+  elif (out / exp_id).exists():
+      out = out / exp_id
+  out.mkdir(parents=True,exist_ok=True)
   val=ChannelDataset(cfg,'val'); test=ChannelDataset(cfg, 'test')
   vl=DataLoader(val,batch_size=1,shuffle=False); tl=DataLoader(test,batch_size=1,shuffle=False)
   # Load best checkpoint (*.pth) by default
@@ -26,14 +32,20 @@ def main(cfg_path, seed, mc_samples, temperature_scale, conformal, cuda):
   state = torch.load(ckpt, map_location='cpu', weights_only=False)
   # Handle different checkpoint formats
   if 'model' in state:
-      net.load_state_dict(state['model'])
+      model_state = state['model']
   elif 'swa_model_state_dict' in state:
-      net.load_state_dict(state['swa_model_state_dict'])
+      model_state = state['swa_model_state_dict']
   elif 'model_state_dict' in state:
-      net.load_state_dict(state['model_state_dict'])
+      model_state = state['model_state_dict']
   else:
-      net.load_state_dict(state)
-  if cfg['uq'].get('method','none')=='mc_dropout': net.enable_mc_dropout(p=cfg['uq'].get('dropout_p',0.2))
+      model_state = state
+  
+  # Handle DataParallel wrapper (remove 'module.' prefix)
+  if any(k.startswith('module.') for k in model_state.keys()):
+      model_state = {k.replace('module.', ''): v for k, v in model_state.items()}
+  
+  net.load_state_dict(model_state)
+  if cfg.get('uq', {}).get('method','none')=='mc_dropout': net.enable_mc_dropout(p=cfg.get('uq', {}).get('dropout_p',0.2))
   device = pick_device(cuda)
   net = net.to(device)
   log.info(f'Loaded {ckpt.name}')
