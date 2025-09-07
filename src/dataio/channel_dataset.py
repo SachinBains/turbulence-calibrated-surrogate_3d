@@ -102,29 +102,76 @@ class ChannelDataset(Dataset):
         self._compute_stats()
     
     def _compute_stats(self):
-        """Compute normalization statistics from first few files."""
-        velocities = []
+        """Compute normalization statistics following thesis methodology."""
         
-        # Use first 5 files for stats
-        for i in range(min(5, len(self.cube_files))):
-            try:
-                with h5py.File(self.cube_files[i], 'r') as f:
-                    velocity = f['velocity'][:]  # Shape: (64, 64, 64, 3)
-                    velocities.append(velocity.reshape(-1, 3))
-            except Exception as e:
-                print(f"Warning: Could not load {self.cube_files[i]}: {e}")
-                continue
+        # Check if we should compute stats or load pre-computed ones
+        stats_file = Path("splits") / "channel_normalization_stats.npz"
         
-        if velocities:
-            all_vel = np.concatenate(velocities, axis=0)
-            self.velocity_mean = np.mean(all_vel, axis=0)
-            self.velocity_std = np.std(all_vel, axis=0)
+        if self.split == 'train' or not stats_file.exists():
+            # Compute stats from ALL training files (thesis methodology)
+            print("Computing normalization statistics from all training files...")
+            velocities = []
+            
+            # Use all training files for comprehensive statistics
+            max_files = len(self.cube_files) if self.split == 'train' else min(50, len(self.cube_files))
+            
+            for i in range(max_files):
+                try:
+                    with h5py.File(self.cube_files[i], 'r') as f:
+                        # Handle different possible keys
+                        if 'velocity' in f:
+                            velocity = f['velocity'][:]
+                        elif 'u' in f:
+                            # Combine u, v, w components
+                            u = f['u'][:]
+                            v = f['v'][:]
+                            w = f['w'][:]
+                            velocity = np.stack([u, v, w], axis=-1)
+                        else:
+                            print(f"Warning: No velocity data found in {self.cube_files[i]}")
+                            continue
+                            
+                        velocities.append(velocity)
+                        
+                        # Progress indicator for large datasets
+                        if (i + 1) % 100 == 0:
+                            print(f"  Processed {i + 1}/{max_files} files...")
+                            
+                except Exception as e:
+                    print(f"Warning: Could not load {self.cube_files[i]}: {e}")
+                    continue
+            
+            if not velocities:
+                raise ValueError("No valid velocity data found for computing statistics")
+            
+            # Stack all velocities and compute stats
+            all_velocities = np.stack(velocities, axis=0)
+            
+            # Compute per-component statistics (thesis: μ_train, σ_train ∈ R³)
+            self.mean = np.mean(all_velocities, axis=(0, 1, 2, 3))  # Shape: (3,)
+            self.std = np.std(all_velocities, axis=(0, 1, 2, 3))    # Shape: (3,)
+            
+            # Add small epsilon for numerical stability (thesis: σ + 10⁻⁸)
+            self.std = self.std + 1e-8
+            
+            # Save stats for other splits (thesis: "frozen for validation, test")
+            if self.split == 'train':
+                stats_file.parent.mkdir(parents=True, exist_ok=True)
+                np.savez(stats_file, mean=self.mean, std=self.std)
+                print(f"Saved normalization stats to {stats_file}")
+            
+            print(f"Computed normalization stats from {len(velocities)} files:")
+            print(f"  Mean: {self.mean}")
+            print(f"  Std:  {self.std}")
+            
         else:
-            # Fallback
-            self.velocity_mean = np.array([0.0, 0.0, 0.0])
-            self.velocity_std = np.array([1.0, 1.0, 1.0])
-        
-        print(f"Velocity stats - Mean: {self.velocity_mean}, Std: {self.velocity_std}")
+            # Load frozen stats for val/test (thesis methodology)
+            print("Loading frozen normalization statistics from training...")
+            stats = np.load(stats_file)
+            self.mean = stats['mean']
+            self.std = stats['std']
+            
+            print(f"Loaded frozen stats: mean={self.mean}, std={self.std}")
     
     def __len__(self):
         return len(self.cube_files)
