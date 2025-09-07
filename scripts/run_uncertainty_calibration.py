@@ -24,7 +24,8 @@ def load_model_outputs(results_dir: Path, split: str = 'test') -> tuple:
     pred_patterns = [
         f'pred_{split}.npy',
         f'mean_{split}.npy', 
-        f'mc_mean_{split}.npy'
+        f'mc_mean_{split}.npy',
+        f'ens_mean_{split}.npy'
     ]
     
     predictions = None
@@ -47,7 +48,8 @@ def load_model_outputs(results_dir: Path, split: str = 'test') -> tuple:
         f'var_{split}.npy',
         f'mc_var_{split}.npy',
         f'std_{split}.npy',
-        f'mc_std_{split}.npy'
+        f'mc_std_{split}.npy',
+        f'ens_var_{split}.npy'
     ]
     
     uncertainties = None
