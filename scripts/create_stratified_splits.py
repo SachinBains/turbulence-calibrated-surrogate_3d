@@ -39,10 +39,27 @@ def calculate_geometric_center_yplus(cube_position, cube_size, channel_height, R
     
     return yplus
 
-def extract_yplus_from_filename_or_position(filename, file_index, total_files):
-    """Extract Y+ value from JHTDB filename or estimate from position."""
+def extract_yplus_from_batch_structure(filepath, file_index, total_files):
+    """Extract Y+ value from batch folder structure or filename."""
     
-    # Try to extract from filename first
+    # Check if file is in a batch folder structure
+    if 'Re1000_Batch' in str(filepath):
+        # Map batch folders to Y+ bands based on structured sampling
+        if 'Batch1_Data' in str(filepath):
+            # Batch 1: Y+ band [0, 30) - center around 15
+            return 15.0
+        elif 'Batch2_Data' in str(filepath):
+            # Batch 2: Y+ band [30, 100) - center around 65
+            return 65.0
+        elif 'Batch3_Data' in str(filepath):
+            # Batch 3: Y+ band [100, 370) - center around 235
+            return 235.0
+        elif 'Batch4_Data' in str(filepath):
+            # Batch 4: Y+ band [370, 1000] - center around 685
+            return 685.0
+    
+    # Try to extract from filename
+    filename = filepath.name
     match = re.search(r'yplus_(\d+\.?\d*)', filename)
     if match:
         return float(match.group(1))
@@ -51,11 +68,8 @@ def extract_yplus_from_filename_or_position(filename, file_index, total_files):
     if match:
         return float(match.group(1))
     
-    # If no Y+ in filename, estimate based on structured sampling
-    # Assume files are ordered by Y+ and distributed across channel
-    # Map file index to Y+ range [0, 1000]
+    # Fallback: estimate based on file position
     yplus_estimate = (file_index / total_files) * 1000
-    
     return yplus_estimate
 
 def assign_yplus_band(yplus_value, bands):
@@ -75,16 +89,29 @@ def create_stratified_splits(data_dir, output_dir, seed=42):
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
     
-    # Find all cube files
-    cube_files = sorted(list(data_path.glob('chan96_*.h5')))
-    if not cube_files:
-        # Try alternative pattern
-        cube_files = sorted(list(data_path.glob('cube_*.h5')))
+    # Find all cube files - handle batch folder structure
+    cube_files = []
+    
+    # Check for batch folders first (Re1000_Batch*_Data structure)
+    batch_folders = sorted(list(data_path.glob('Re1000_Batch*_Data')))
+    if batch_folders:
+        print(f"Found {len(batch_folders)} batch folders")
+        for batch_folder in batch_folders:
+            batch_files = sorted(list(batch_folder.glob('chan96_*.h5')))
+            if not batch_files:
+                batch_files = sorted(list(batch_folder.glob('cube_*.h5')))
+            cube_files.extend(batch_files)
+            print(f"  {batch_folder.name}: {len(batch_files)} files")
+    else:
+        # Fallback to flat directory structure
+        cube_files = sorted(list(data_path.glob('chan96_*.h5')))
+        if not cube_files:
+            cube_files = sorted(list(data_path.glob('cube_*.h5')))
     
     if not cube_files:
-        raise ValueError(f"No cube files found in {data_dir}")
+        raise ValueError(f"No cube files found in {data_dir} or batch subdirectories")
     
-    print(f"Found {len(cube_files)} cube files")
+    print(f"Total: {len(cube_files)} cube files")
     
     # Y+ bands from thesis (4 bands for 1200 cubes = 300 per band)
     yplus_bands = [
@@ -99,15 +126,14 @@ def create_stratified_splits(data_dir, output_dir, seed=42):
     unassigned_files = []
     
     for i, filepath in enumerate(cube_files):
-        filename = filepath.name
-        yplus = extract_yplus_from_filename_or_position(filename, i, len(cube_files))
+        yplus = extract_yplus_from_batch_structure(filepath, i, len(cube_files))
         
         band_idx = assign_yplus_band(yplus, yplus_bands)
         if band_idx is not None:
             band_files[band_idx].append(i)
         else:
             unassigned_files.append(i)
-            print(f"Warning: Y+ {yplus:.1f} in {filename} doesn't fit any band")
+            print(f"Warning: Y+ {yplus:.1f} in {filepath.name} doesn't fit any band")
     
     # Handle unassigned files by distributing them evenly
     for i, file_idx in enumerate(unassigned_files):
