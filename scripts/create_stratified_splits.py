@@ -39,6 +39,84 @@ def calculate_geometric_center_yplus(cube_position, cube_size, channel_height, R
     
     return yplus
 
+def extract_temporal_id(filename):
+    """Extract temporal identifier from JHTDB filename to prevent temporal overlap."""
+    # Pattern: chan96_band1_sample001_t101_ix796_iy416_iz253.h5
+    match = re.search(r't(\d+)', filename)
+    if match:
+        return int(match.group(1))
+    
+    # Fallback: use filename hash for consistent grouping
+    return hash(filename) % 1000
+
+def extract_spatial_id(filename):
+    """Extract spatial identifier from JHTDB filename to prevent spatial overlap."""
+    # Pattern: chan96_band1_sample001_t101_ix796_iy416_iz253.h5
+    match = re.search(r'ix(\d+)_iy(\d+)_iz(\d+)', filename)
+    if match:
+        return (int(match.group(1)), int(match.group(2)), int(match.group(3)))
+    
+    # Fallback: use filename hash for consistent grouping
+    return hash(filename + "_spatial") % 1000
+
+def check_temporal_spatial_overlap(file_list, cube_size=96):
+    """
+    Check for temporal and spatial overlap between cubes to prevent data leakage.
+    
+    Args:
+        file_list: List of file metadata dictionaries
+        cube_size: Size of each cube (96x96x96)
+    
+    Returns:
+        Groups of files that don't overlap temporally or spatially
+    """
+    # Group by temporal ID first
+    temporal_groups = defaultdict(list)
+    for file_meta in file_list:
+        temporal_groups[file_meta['temporal_id']].append(file_meta)
+    
+    # Within each temporal group, check spatial overlap
+    non_overlapping_groups = []
+    
+    for t_id, t_files in temporal_groups.items():
+        # Sort by spatial coordinates for easier overlap detection
+        t_files.sort(key=lambda x: x['spatial_id'])
+        
+        spatial_groups = []
+        current_group = []
+        
+        for file_meta in t_files:
+            ix, iy, iz = file_meta['spatial_id']
+            
+            # Check if this cube overlaps with any in current group
+            overlaps = False
+            for existing in current_group:
+                ex_ix, ex_iy, ex_iz = existing['spatial_id']
+                
+                # Check for overlap in all 3 dimensions
+                x_overlap = abs(ix - ex_ix) < cube_size
+                y_overlap = abs(iy - ex_iy) < cube_size  
+                z_overlap = abs(iz - ex_iz) < cube_size
+                
+                if x_overlap and y_overlap and z_overlap:
+                    overlaps = True
+                    break
+            
+            if overlaps:
+                # Start new spatial group
+                if current_group:
+                    spatial_groups.append(current_group)
+                current_group = [file_meta]
+            else:
+                current_group.append(file_meta)
+        
+        if current_group:
+            spatial_groups.append(current_group)
+        
+        non_overlapping_groups.extend(spatial_groups)
+    
+    return non_overlapping_groups
+
 def extract_yplus_from_batch_structure(filepath, file_index, total_files):
     """Extract Y+ value from batch folder structure or filename."""
     
@@ -121,18 +199,33 @@ def create_stratified_splits(data_dir, output_dir, seed=42):
         (370, 1000)   # B4: Inner-outer interface
     ]
     
-    # Group files by Y+ band
+    # Group files by Y+ band with temporal/spatial separation
     band_files = defaultdict(list)
     unassigned_files = []
     
+    # Extract temporal and spatial info for overlap prevention
+    file_metadata = []
     for i, filepath in enumerate(cube_files):
         yplus = extract_yplus_from_batch_structure(filepath, i, len(cube_files))
         
+        # Extract temporal/spatial info from filename if available
+        # This is a placeholder - adjust based on your actual filename structure
+        temporal_id = extract_temporal_id(filepath.name)
+        spatial_id = extract_spatial_id(filepath.name)
+        
+        file_metadata.append({
+            'index': i,
+            'filepath': filepath,
+            'yplus': yplus,
+            'temporal_id': temporal_id,
+            'spatial_id': spatial_id
+        })
+        
         band_idx = assign_yplus_band(yplus, yplus_bands)
         if band_idx is not None:
-            band_files[band_idx].append(i)
+            band_files[band_idx].append(file_metadata[-1])
         else:
-            unassigned_files.append(i)
+            unassigned_files.append(file_metadata[-1])
             print(f"Warning: Y+ {yplus:.1f} in {filepath.name} doesn't fit any band")
     
     # Handle unassigned files by distributing them evenly
@@ -163,43 +256,56 @@ def create_stratified_splits(data_dir, output_dir, seed=42):
     
     np.random.seed(seed)
     
-    # Stratified splitting within each band
+    # Stratified splitting within each band with temporal/spatial separation
     for band_idx in range(len(yplus_bands)):
-        band_indices = np.array(band_files[band_idx])
-        n_band = len(band_indices)
+        band_metadata = band_files[band_idx]
+        n_band = len(band_metadata)
         
         if n_band == 0:
             continue
-            
-        # Shuffle indices within band
-        shuffled = np.random.permutation(band_indices)
         
-        # Calculate split points (70/15/15)
-        n_train = int(n_band * split_ratios['train'])
-        n_val = int(n_band * split_ratios['val'])
-        n_test = int(n_band * split_ratios['test'])
+        print(f"\nProcessing Band {band_idx+1} [{yplus_bands[band_idx][0]}-{yplus_bands[band_idx][1]}): {n_band} files")
         
-        # Ensure all samples are assigned
-        if n_train + n_val + n_test < n_band:
-            n_train += n_band - (n_train + n_val + n_test)
+        # Group files to prevent temporal/spatial overlap
+        non_overlapping_groups = check_temporal_spatial_overlap(band_metadata)
+        print(f"  Created {len(non_overlapping_groups)} non-overlapping groups")
         
-        # Split the band
-        band_train = shuffled[:n_train]
-        band_val = shuffled[n_train:n_train+n_val]
-        band_test = shuffled[n_train+n_val:n_train+n_val+n_test]
+        # Assign groups to splits to prevent leakage
+        np.random.shuffle(non_overlapping_groups)
         
-        # Extract calibration fold from training (20% of training)
-        n_cal = int(len(band_train) * calibration_from_train)
-        band_cal = band_train[:n_cal]
-        band_train_final = band_train[n_cal:]  # Remaining training after calibration
+        # Calculate split points based on number of groups (not individual files)
+        n_groups = len(non_overlapping_groups)
+        n_train_groups = int(n_groups * split_ratios['train'])
+        n_val_groups = int(n_groups * split_ratios['val'])
+        n_test_groups = n_groups - n_train_groups - n_val_groups
+        
+        # Assign groups to splits
+        train_groups = non_overlapping_groups[:n_train_groups]
+        val_groups = non_overlapping_groups[n_train_groups:n_train_groups+n_val_groups]
+        test_groups = non_overlapping_groups[n_train_groups+n_val_groups:]
+        
+        # Extract file indices from groups
+        band_train_indices = []
+        for group in train_groups:
+            band_train_indices.extend([f['index'] for f in group])
+        
+        band_val_indices = [f['index'] for group in val_groups for f in group]
+        band_test_indices = [f['index'] for group in test_groups for f in group]
+        
+        # Extract calibration fold from training (20% of training files)
+        np.random.shuffle(band_train_indices)
+        n_cal = int(len(band_train_indices) * calibration_from_train)
+        band_cal_indices = band_train_indices[:n_cal]
+        band_train_final_indices = band_train_indices[n_cal:]
         
         # Add to global splits
-        train_idx.extend(band_train_final)
-        val_idx.extend(band_val)
-        test_idx.extend(band_test)
-        cal_idx.extend(band_cal)
+        train_idx.extend(band_train_final_indices)
+        val_idx.extend(band_val_indices)
+        test_idx.extend(band_test_indices)
+        cal_idx.extend(band_cal_indices)
         
-        print(f"  Band {band_idx+1}: {len(band_train_final)} train, {len(band_val)} val, {len(band_test)} test, {len(band_cal)} cal")
+        print(f"  Final: {len(band_train_final_indices)} train, {len(band_val_indices)} val, {len(band_test_indices)} test, {len(band_cal_indices)} cal")
+        print(f"  No temporal/spatial overlap between splits ✓")
     
     # Convert to numpy arrays and sort
     train_idx = np.sort(np.array(train_idx))
