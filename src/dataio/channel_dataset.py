@@ -1,9 +1,10 @@
+import h5py
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-import h5py
 from pathlib import Path
-from typing import List, Tuple
+import glob
+import typing
 import glob
 
 class ChannelDataset(Dataset):
@@ -61,19 +62,41 @@ class ChannelDataset(Dataset):
         if not cube_files:
             raise ValueError(f"No cube files found in {self.data_dir} or batch subdirectories")
         
-        # Split data: 70% train, 15% val, 15% test
-        n_total = len(cube_files)
-        n_train = int(0.7 * n_total)
-        n_val = int(0.15 * n_total)
+        # Use stratified splits if available, otherwise fall back to simple splitting
+        splits_dir = Path("splits")
+        train_split_file = splits_dir / "channel_train_idx.npy"
         
-        if split == 'train':
-            self.cube_files = cube_files[:n_train]
-        elif split == 'val':
-            self.cube_files = cube_files[n_train:n_train+n_val]
-        else:  # test
-            self.cube_files = cube_files[n_train+n_val:]
+        if train_split_file.exists():
+            # Load stratified splits
+            if split == 'train':
+                indices = np.load(splits_dir / "channel_train_idx.npy")
+            elif split == 'val':
+                indices = np.load(splits_dir / "channel_val_idx.npy")
+            elif split == 'test':
+                indices = np.load(splits_dir / "channel_test_idx.npy")
+            elif split == 'cal':
+                indices = np.load(splits_dir / "channel_cal_idx.npy")
+            else:
+                raise ValueError(f"Unknown split: {split}")
+            
+            self.cube_files = [cube_files[i] for i in indices]
+            print(f"ChannelDataset {split}: {len(self.cube_files)} files (stratified Y+ splits)")
+        else:
+            # Fallback to simple splitting
+            print("Warning: No stratified splits found, using simple filename-based splitting")
+            n_total = len(cube_files)
+            n_train = int(0.7 * n_total)
+            n_val = int(0.15 * n_total)
+            
+            if split == 'train':
+                self.cube_files = cube_files[:n_train]
+            elif split == 'val':
+                self.cube_files = cube_files[n_train:n_train+n_val]
+            else:  # test
+                self.cube_files = cube_files[n_train+n_val:]
+            
+            print(f"ChannelDataset {split}: {len(self.cube_files)} files (simple splits)")
         
-        print(f"ChannelDataset {split}: {len(self.cube_files)} files (total dataset: {len(cube_files)} files)")
         
         # Compute normalization stats
         self._compute_stats()
