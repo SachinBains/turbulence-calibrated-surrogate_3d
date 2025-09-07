@@ -45,7 +45,7 @@ def main():
     # Load model
     results_dir = Path(cfg['paths']['results_dir']) / exp_id
     checkpoint_patterns = ['best_*.pth', 'best_model.pth', 'model_*.pth', '*.pth']
-ckpt = None
+    ckpt = None
     
     for pattern in checkpoint_patterns:
         ckpts = sorted(results_dir.glob(pattern))
