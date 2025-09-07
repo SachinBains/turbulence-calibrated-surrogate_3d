@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=smoke_analysis
-#SBATCH --partition=cpu
+#SBATCH --partition=multicore
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
