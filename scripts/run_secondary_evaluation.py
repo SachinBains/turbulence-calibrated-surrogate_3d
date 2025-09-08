@@ -23,7 +23,7 @@ from eval.band_evaluation import BandEvaluator
 from eval.physics_gates import PhysicsGateValidator
 # # from utils.seeding import set_deterministic_seeds
 # # from utils.devices import get_device
-from utils.logging import setup_logging
+# from utils.logging import setup_logging
 
 class SecondaryDatasetEvaluator:
     """Zero-shot evaluator for Re_τ=5200 secondary dataset."""
