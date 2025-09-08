@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=stage2_batch1
-#SBATCH --partition=gpu-v100
+#SBATCH --partition=gpuV
 #SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
