@@ -7,7 +7,7 @@ export ARTIFACTS_ROOT=/mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d
 
 echo "Starting COMPLETE analysis pipeline - ALL 210 files generation..."
 
-# Fix config paths first
+# Fix config paths first (always run after git pull)
 echo "=== PHASE 0: Fix Config Paths ==="
 python cranfield_analysis/update_paths_for_friend.py
 
