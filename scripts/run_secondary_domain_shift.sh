@@ -2,8 +2,8 @@
 # STAGE 2: Domain Shift Validation - Zero-Shot Secondary Evaluation
 # Re_τ=1000 → Re_τ=5200 domain shift testing with existing trained models
 
-export PYTHONPATH=/mnt/iusers01/fse-ugpgt01/mace01/n63719vm/turbulence-calibrated-surrogate_3d:$PYTHONPATH
-export ARTIFACTS_ROOT=/mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d
+export PYTHONPATH=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_3d:$PYTHONPATH
+export ARTIFACTS_ROOT=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d
 
 echo "Starting STAGE 2: Domain Shift Validation (Re_τ=1000 → Re_τ=5200)"
 

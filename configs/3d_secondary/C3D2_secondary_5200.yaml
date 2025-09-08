@@ -8,9 +8,9 @@ description: "Zero-shot evaluation of C3D2 MC Dropout on Re_τ=5200 (300 cubes, 
 dataset:
   name: channel3d_secondary
   data_dirs:
-    - /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/data_3d/channel_flow_5200/Re5200_Batch1_Data/channel5200_cubes/
-    - /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/data_3d/channel_flow_5200/Re5200_Batch2_Data/channel5200_cubes/
-    - /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/data_3d/channel_flow_5200/Re5200_Batch3_Data/channel5200_cubes/
+    - /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/data_3d/channel_flow_5200/Re5200_Batch1_Data/channel5200_cubes/
+    - /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/data_3d/channel_flow_5200/Re5200_Batch2_Data/channel5200_cubes/
+    - /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/data_3d/channel_flow_5200/Re5200_Batch3_Data/channel5200_cubes/
   resolution: [96, 96, 96]
   variables: [u, v, w]  # velocity components only
   re_tau: 5200  # Reynolds number for secondary dataset
@@ -29,9 +29,9 @@ model:
 
 # Primary artifacts to reuse (NO RETRAINING)
 primary_artifacts:
-  checkpoint_path: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d/results/C3D2_channel_mc_dropout_128/best_model.pth
-  normalization_stats: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d/datasets/channel3d/splits/channel_normalization_stats.npz
-  conformal_quantiles: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d/results/C3D2_channel_mc_dropout_128/conformal_quantiles.npz
+  checkpoint_path: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results/C3D2_channel_mc_dropout_128/best_model.pth
+  normalization_stats: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/datasets/channel3d/splits/channel_normalization_stats.npz
+  conformal_quantiles: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results/C3D2_channel_mc_dropout_128/conformal_quantiles.npz
 
 # UQ configuration
 uq:
@@ -79,10 +79,10 @@ evaluation:
 
 # Output paths
 paths:
-  artifacts_root: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d
-  results_dir: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d/results/C3D2_secondary_5200
-  figures_dir: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d/figures/C3D2_secondary_5200
-  logs_dir: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d/logs/evaluation
+  artifacts_root: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d
+  results_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results/C3D2_secondary_5200
+  figures_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/figures/C3D2_secondary_5200
+  logs_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs/evaluation
 
 # Hardware
 device: cuda
