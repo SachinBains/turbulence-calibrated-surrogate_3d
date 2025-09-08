@@ -19,7 +19,7 @@ from typing import Dict, List, Tuple
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
 from dataio.channel_dataset import ChannelDataset
-from eval.band_evaluation import evaluate_by_bands, BandEvaluator
+from eval.band_evaluation import BandEvaluator
 from eval.physics_gates import PhysicsGateValidator
 from utils.seeding import set_deterministic_seeds
 from utils.devices import get_device
