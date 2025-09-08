@@ -406,7 +406,7 @@ def main():
     args = parser.parse_args()
     
     # Setup logging
-    setup_logging()
+    # setup_logging()
     
     try:
         # Initialize evaluator
