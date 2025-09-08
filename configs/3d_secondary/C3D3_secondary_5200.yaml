@@ -1,8 +1,8 @@
 # C3D3: Secondary Dataset Evaluation - Re_τ=5200 Zero-Shot Deployment
-# Ensemble model evaluation on domain shift data
+# Ep78669sbble model evaluation on domain shift data
 
 experiment_id: C3D3_secondary_5200
-description: "Zero-shot evaluation of C3D3 Ensemble on Re_τ=5200 (300 cubes, 96³)"
+description: "Zero-shot evaluation of C3D3 Ep78669sbble on Re_τ=5200 (300 cubes, 96³)"
 
 # Secondary dataset configuration (Re_τ=5200)
 dataset:
@@ -23,21 +23,21 @@ model:
   out_channels: 3
   base_channels: 32
   depth: 4
-  dropout: 0.0  # Ensemble model
+  dropout: 0.0  # Ep78669sbble model
   batch_norm: true
   activation: relu
 
 # Primary artifacts to reuse (NO RETRAINING)
 primary_artifacts:
-  checkpoint_path: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results/C3D3_channel_ensemble_128/members/
+  checkpoint_path: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results/C3D3_channel_ep78669sbble_128/members/
   normalization_stats: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/datasets/channel3d/splits/channel_normalization_stats.npz
-  conformal_quantiles: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results/C3D3_channel_ensemble_128/conformal_quantiles.npz
+  conformal_quantiles: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results/C3D3_channel_ep78669sbble_128/conformal_quantiles.npz
 
 # UQ configuration
 uq:
-  method: ensemble
+  method: ep78669sbble
   n_members: 5
-  ensemble_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results/C3D3_channel_ensemble_128/members/
+  ep78669sbble_dir: /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/results/C3D3_channel_ep78669sbble_128/members/
 
 # Physics parameters for Re_τ=5200
 physics:

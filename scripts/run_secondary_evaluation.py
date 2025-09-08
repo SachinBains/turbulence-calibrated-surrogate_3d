@@ -22,7 +22,7 @@ from dataio.channel_dataset import ChannelDataset
 from eval.band_evaluation import BandEvaluator
 from eval.physics_gates import PhysicsGateValidator
 # # from utils.seeding import set_deterministic_seeds
-from utils.devices import get_device
+# from utils.devices import get_device
 from utils.logging import setup_logging
 
 class SecondaryDatasetEvaluator:
@@ -45,7 +45,8 @@ class SecondaryDatasetEvaluator:
             if torch.cuda.is_available():
                 torch.cuda.manual_seed_all(seed)
         
-        self.device = get_device(self.config.get('device', 'cuda'))
+        import torch
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
         # Initialize physics gate validator
         self.physics_validator = PhysicsGateValidator()
