@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 from pathlib import Path
 import glob
 import typing
-import glob
+import os
 
 class ChannelDataset(Dataset):
     """Dataset for channel flow velocity cubes - compatible with HITDataset interface."""
@@ -63,7 +63,9 @@ class ChannelDataset(Dataset):
             raise ValueError(f"No cube files found in {self.data_dir} or batch subdirectories")
         
         # Use stratified splits if available, otherwise fall back to simple splitting
-        splits_dir = Path("/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/datasets/channel3d/splits")
+        # Get splits directory from environment or use default
+        artifacts_root = os.environ.get('ARTIFACTS_ROOT', '/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d')
+        splits_dir = Path(artifacts_root) / "datasets/channel3d/splits"
         train_split_file = splits_dir / "channel_train_idx.npy"
         
         if train_split_file.exists():
