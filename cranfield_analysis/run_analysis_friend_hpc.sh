@@ -11,8 +11,12 @@ echo "Starting COMPLETE analysis pipeline - ALL 210 files generation..."
 echo "=== PHASE 0: Fix Config Paths ==="
 python cranfield_analysis/update_paths_for_friend.py
 
+# PHASE 0: Fix Ensemble Directory Structure
+echo "=== PHASE 0: Fix Ensemble Structure ==="
+python scripts/fix_ensemble_structure.py --artifacts_dir $ARTIFACTS_ROOT
+
 # Verify nested directory structure
-echo "=== PHASE 0: File Verification ==="
+echo "=== File Verification ==="
 for exp in C3D1_channel_baseline_128 C3D2_channel_mc_dropout_128 C3D3_channel_ensemble_128 C3D4_channel_variational_128 C3D5_channel_swag_128 C3D6_channel_physics_informed_128; do
     echo "Checking $exp..."
     # Check nested structure
