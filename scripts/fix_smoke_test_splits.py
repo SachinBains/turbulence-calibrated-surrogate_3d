@@ -13,7 +13,7 @@ def generate_smoke_test_splits(artifacts_root):
     """Generate splits for the actual smoke test dataset"""
     
     # The configs point to this path for smoke test data
-    smoke_data_dir = Path("/mnt/iusers01/fse-ugpgt01/mace01/n63719vm/data_3d/channel_flow_smoke")
+    smoke_data_dir = Path("/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/data_3d/channel_flow_smoke")
     
     print(f"Looking for smoke test data in: {smoke_data_dir}")
     

@@ -134,10 +134,10 @@ def create_minimal_analysis_script(artifacts_root, valid_models):
     
     script_content = f"""#!/bin/bash
 # MINIMAL ANALYSIS PIPELINE - ONLY VALID MODELS
-# Friend's HPC (n63719vm) - Only models with checkpoints
+# Friend's HPC (p78669sb) - Only models with checkpoints
 
-export PYTHONPATH=/mnt/iusers01/fse-ugpgt01/mace01/n63719vm/turbulence-calibrated-surrogate_3d:$PYTHONPATH
-export ARTIFACTS_ROOT=/mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d
+export PYTHONPATH=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/turbulence-calibrated-surrogate_3d:$PYTHONPATH
+export ARTIFACTS_ROOT=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d
 
 echo "Starting MINIMAL analysis pipeline - {len(valid_models)} valid models..."
 

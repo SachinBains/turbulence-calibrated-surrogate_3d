@@ -39,7 +39,7 @@ def update_dataset_path():
         # For smoke test, ensure we use the correct path structure
         if not self.data_dir.exists():
             # Try alternative smoke test path
-            alt_path = Path(str(self.data_dir).replace('/p78669sb/', '/n63719vm/'))
+            alt_path = Path(str(self.data_dir).replace('/p78669sb/', '/p78669sb/'))
             if alt_path.exists():
                 self.data_dir = alt_path
                 print(f"Using alternative path: {self.data_dir}")'''

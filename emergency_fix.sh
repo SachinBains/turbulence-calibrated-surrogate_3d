@@ -14,7 +14,7 @@ git pull origin main
 python cranfield_analysis/update_paths_for_friend.py
 
 # Generate smoke test splits immediately
-export ARTIFACTS_ROOT=/mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d
+export ARTIFACTS_ROOT=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d
 python scripts/fix_smoke_test_splits.py --artifacts_root $ARTIFACTS_ROOT
 
 # Fix directory structure

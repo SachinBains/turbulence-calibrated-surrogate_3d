@@ -9,7 +9,7 @@
 module load python/3.8.5
 
 # Set environment variables
-export ARTIFACTS_ROOT=/mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d
+export ARTIFACTS_ROOT=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d
 
 # Create virtual environment if needed
 if [ ! -d "venv" ]; then
