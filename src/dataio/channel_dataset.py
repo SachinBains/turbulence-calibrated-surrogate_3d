@@ -106,8 +106,12 @@ class ChannelDataset(Dataset):
     def _compute_stats(self):
         """Compute normalization statistics following thesis methodology."""
         
+        # Get splits directory from environment
+        artifacts_root = os.environ.get('ARTIFACTS_ROOT', '/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d')
+        splits_dir = Path(artifacts_root) / "datasets/channel3d/splits"
+        
         # Check if we should compute stats or load pre-computed ones
-        stats_file = Path("/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/datasets/channel3d/splits") / "channel_normalization_stats.npz"
+        stats_file = splits_dir / "channel_normalization_stats.npz"
         
         if self.split == 'train' or not stats_file.exists():
             # Compute stats from ALL training files (thesis methodology)
