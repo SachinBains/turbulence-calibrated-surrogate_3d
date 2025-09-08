@@ -35,8 +35,10 @@ def main(cfg_path, seed, mc_samples, temperature_scale, conformal, cuda):
   out.mkdir(parents=True,exist_ok=True)
   val=ChannelDataset(cfg,'val'); test=ChannelDataset(cfg, 'test')
   vl=DataLoader(val,batch_size=1,shuffle=False); tl=DataLoader(test,batch_size=1,shuffle=False)
-  # Load best checkpoint (*.pth) by default
+  # Load checkpoint (*.pth) - try best_*.pth first, then any *.pth
   best_ckpts = sorted(out.glob('best_*.pth'))
+  if not best_ckpts:
+      best_ckpts = sorted(out.glob('*.pth'))
   assert best_ckpts, f'No checkpoint in {out}'
   ckpt = best_ckpts[-1]
   mcfg = cfg['model']
