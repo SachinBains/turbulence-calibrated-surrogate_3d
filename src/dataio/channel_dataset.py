@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 from pathlib import Path
 import glob
 import typing
-import os
+import glob
 
 class ChannelDataset(Dataset):
     """Dataset for channel flow velocity cubes - compatible with HITDataset interface."""
