@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --gres=gpu:1
-#SBATCH --time=00:20:00
+#SBATCH --time=00:10:00
 #SBATCH --output=logs/slurm/streamlined_stage4_%j.out
 #SBATCH --error=logs/slurm/streamlined_stage4_%j.err
 
