@@ -42,7 +42,7 @@ echo "=== Running C3D6 Physics Informed ==="
 if find $ARTIFACTS_ROOT/results/C3D6_channel_physics_informed_128 -name "*.pth" | head -1 | grep -q .; then
     echo "✓ C3D6: Checkpoint found"
     python scripts/run_secondary_evaluation.py --config configs/3d_secondary/C3D6_secondary_5200.yaml --cuda
-    python scripts/validate_physics.py --config configs/3d_secondary/C3D6_secondary_5200.yaml --results_dir $ARTIFACTS_ROOT/results/C3D6_secondary_5200 --method baseline
+    python scripts/validate_physics.py --config configs/3d_secondary/C3D6_secondary_5200.yaml --results_dir $ARTIFACTS_ROOT/results/C3D6_secondary_5200 --method mc
     echo "✓ C3D6 completed"
 else
     echo "✗ C3D6: No checkpoint found"

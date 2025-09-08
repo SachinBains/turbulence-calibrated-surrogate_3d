@@ -212,7 +212,7 @@ def main():
     
     # Setup output directory
     if args.output_dir:
-        output_dir = Path(args.output_dir)
+        output_dir = Path(args.output_dir) if args.output_dir else Path(f"/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/figures/{cfg['experiment_id']}_physics")
     else:
         exp_id = results_dir.name
         output_dir = Path(cfg['paths']['artifacts_root']) / 'figures' / exp_id

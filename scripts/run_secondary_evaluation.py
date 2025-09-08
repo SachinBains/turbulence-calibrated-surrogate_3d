@@ -21,7 +21,7 @@ sys.path.append(str(Path(__file__).parent.parent / 'src'))
 from dataio.channel_dataset import ChannelDataset
 from eval.band_evaluation import BandEvaluator
 from eval.physics_gates import PhysicsGateValidator
-from utils.seeding import set_deterministic_seeds
+# from utils.seeding import set_deterministic_seeds
 from utils.devices import get_device
 from utils.logging import setup_logging
 
@@ -33,8 +33,19 @@ class SecondaryDatasetEvaluator:
         with open(config_path, 'r') as f:
             self.config = yaml.safe_load(f)
         
+        # Set deterministic seeds
+        if self.config.get('seed'):
+            import random
+            import numpy as np
+            import torch
+            seed = self.config['seed']
+            random.seed(seed)
+            np.random.seed(seed)
+            torch.manual_seed(seed)
+            if torch.cuda.is_available():
+                torch.cuda.manual_seed_all(seed)
+        
         self.device = get_device(self.config.get('device', 'cuda'))
-        set_deterministic_seeds(self.config.get('seed', 42))
         
         # Initialize physics gate validator
         self.physics_validator = PhysicsGateValidator()

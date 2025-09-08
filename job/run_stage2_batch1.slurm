@@ -31,7 +31,7 @@ echo "=== Running C3D1 Baseline ==="
 if find $ARTIFACTS_ROOT/results/C3D1_channel_baseline_128 -name "*.pth" | head -1 | grep -q .; then
     echo "✓ C3D1: Checkpoint found"
     python scripts/run_secondary_evaluation.py --config configs/3d_secondary/C3D1_secondary_5200.yaml --cuda
-    python scripts/validate_physics.py --config configs/3d_secondary/C3D1_secondary_5200.yaml --results_dir $ARTIFACTS_ROOT/results/C3D1_secondary_5200 --method baseline
+    python scripts/validate_physics.py --config configs/3d_secondary/C3D1_secondary_5200.yaml --results_dir $ARTIFACTS_ROOT/results/C3D1_secondary_5200 --method mc
     echo "✓ C3D1 completed"
 else
     echo "✗ C3D1: No checkpoint found"
