@@ -1,0 +1,93 @@
+# C3D3: Secondary Dataset Evaluation - Re_τ=5200 Zero-Shot Deployment
+# Ensemble model evaluation on domain shift data
+
+experiment_id: C3D3_secondary_5200
+description: "Zero-shot evaluation of C3D3 Ensemble on Re_τ=5200 (300 cubes, 96³)"
+
+# Secondary dataset configuration (Re_τ=5200)
+dataset:
+  name: channel3d_secondary
+  data_dirs:
+    - /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/data_3d/channel_flow_5200/Re5200_Batch1_Data/channel5200_cubes/
+    - /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/data_3d/channel_flow_5200/Re5200_Batch2_Data/channel5200_cubes/
+    - /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/data_3d/channel_flow_5200/Re5200_Batch3_Data/channel5200_cubes/
+  resolution: [96, 96, 96]
+  variables: [u, v, w]  # velocity components only
+  re_tau: 5200  # Reynolds number for secondary dataset
+  normalization: frozen_primary  # CRITICAL: Use frozen stats from Re_τ=1000
+  
+# Model architecture (same as primary)
+model:
+  name: unet3d
+  in_channels: 3  # u, v, w only
+  out_channels: 3
+  base_channels: 32
+  depth: 4
+  dropout: 0.0  # Ensemble model
+  batch_norm: true
+  activation: relu
+
+# Primary artifacts to reuse (NO RETRAINING)
+primary_artifacts:
+  checkpoint_path: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d/results/C3D3_channel_ensemble_128/members/
+  normalization_stats: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d/datasets/channel3d/splits/channel_normalization_stats.npz
+  conformal_quantiles: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d/results/C3D3_channel_ensemble_128/conformal_quantiles.npz
+
+# UQ configuration
+uq:
+  method: ensemble
+  n_members: 5
+  ensemble_dir: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d/results/C3D3_channel_ensemble_128/members/
+
+# Physics parameters for Re_τ=5200
+physics:
+  u_tau: 0.2  # Friction velocity for Re_τ=5200
+  nu: 3.85e-5  # Kinematic viscosity for Re_τ=5200
+  domain_size: [8.0, 2.0, 3.0]  # π factors: 8π × 2 × 3π
+  
+# Wall-normal bands (FIXED in wall units)
+bands:
+  B1: [0, 30]      # Viscous sublayer
+  B2: [30, 100]    # Buffer layer  
+  B3: [100, 370]   # Log layer
+  B4: [370, 1000]  # Outer layer
+
+# Physics gates (same stencils as primary)
+physics_gates:
+  divergence:
+    tolerance_factor: 1.2  # 1.2× DNS discretization floor
+    enabled: true
+  spectra:
+    tolerance_percent: 10  # ±10% of DNS envelope
+    enabled: true
+  wall_laws:
+    linear_law_tolerance: 0.1  # Near-wall linear law
+    log_law_tolerance: 0.05    # Log-law slope tolerance
+    enabled: true
+
+# Evaluation configuration
+evaluation:
+  coverage_level: 0.9  # 90% prediction intervals
+  bootstrap_samples: 1000
+  metrics:
+    - PICP  # Prediction Interval Coverage Probability
+    - MPIW  # Mean Prediction Interval Width
+    - RMSE  # Root Mean Square Error
+    - MAE   # Mean Absolute Error
+    - R2    # R-squared
+    - ECE   # Expected Calibration Error
+
+# Output paths
+paths:
+  artifacts_root: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d
+  results_dir: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d/results/C3D3_secondary_5200
+  figures_dir: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d/figures/C3D3_secondary_5200
+  logs_dir: /mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d/logs/evaluation
+
+# Hardware
+device: cuda
+mixed_precision: true
+
+# Reproducibility
+seed: 42
+deterministic: true
