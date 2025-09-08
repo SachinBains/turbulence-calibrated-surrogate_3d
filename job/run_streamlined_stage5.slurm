@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=streamlined_stage5
-#SBATCH --partition=gpu
+#SBATCH --partition=gpuV
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4
@@ -11,15 +11,15 @@
 #SBATCH --error=logs/slurm/streamlined_stage5_%j.err
 
 # Load modules
-module load python/3.9.7
-module load cuda/11.8
-module load gcc/9.3.0
+module load python/3.13.1
+module load cuda/12.6.2
+module load gcc/13.3.0
 
 # Activate environment
-source $HOME/venvs/tcs3d/bin/activate
+source /mnt/iusers01/fse-ugpgt01/mace01/p78669sb/venvs/turbml/bin/activate
 
 # Set environment variables
-export ARTIFACTS_ROOT="/mnt/iusers01/support/mbaxkb7/scratch/artifacts_3d"
+export ARTIFACTS_ROOT="/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d"
 export PYTHONPATH="${SLURM_SUBMIT_DIR}/src:${PYTHONPATH}"
 
 # Change to project directory
