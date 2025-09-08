@@ -16,39 +16,39 @@ for exp in C3D1_channel_baseline_128 C3D2_channel_mc_dropout_128 C3D3_channel_en
     ls -la $ARTIFACTS_ROOT/results/$exp/*_metrics.json 2>/dev/null || echo "  WARNING: No metrics found for $exp"
 done
 
-# PHASE 1: Generate Base Predictions
-echo "=== PHASE 1: Base Predictions ==="
-python scripts/run_eval.py --config configs/3d/C3D1_channel_baseline_128.yaml
-python scripts/run_eval.py --config configs/3d/C3D2_channel_mc_dropout_128.yaml
-python scripts/run_eval.py --config configs/3d/C3D4_channel_variational_128.yaml
-python scripts/run_eval.py --config configs/3d/C3D5_channel_swag_128.yaml
-python scripts/run_eval.py --config configs/3d/C3D6_channel_physics_informed_128.yaml
-python scripts/run_ensemble_eval.py --config configs/3d/C3D3_channel_ensemble_128.yaml
+# PHASE 1: Generate Base Predictions (GPU)
+echo "=== PHASE 1: Base Predictions (GPU) ==="
+python scripts/run_eval.py --config configs/3d/C3D1_channel_baseline_128.yaml --cuda
+python scripts/run_eval.py --config configs/3d/C3D2_channel_mc_dropout_128.yaml --cuda
+python scripts/run_eval.py --config configs/3d/C3D4_channel_variational_128.yaml --cuda
+python scripts/run_eval.py --config configs/3d/C3D5_channel_swag_128.yaml --cuda
+python scripts/run_eval.py --config configs/3d/C3D6_channel_physics_informed_128.yaml --cuda
+python scripts/run_ensemble_eval.py --config configs/3d/C3D3_channel_ensemble_128.yaml --cuda
 
-# PHASE 2: Method-Specific Predictions
-echo "=== PHASE 2: Method-Specific Predictions ==="
-python scripts/generate_baseline_predictions.py --config configs/3d/C3D1_channel_baseline_128.yaml --split val
-python scripts/generate_baseline_predictions.py --config configs/3d/C3D1_channel_baseline_128.yaml --split test
-python scripts/predict_mc.py --config configs/3d/C3D2_channel_mc_dropout_128.yaml --split val
-python scripts/predict_mc.py --config configs/3d/C3D2_channel_mc_dropout_128.yaml --split test
-python scripts/predict_ens.py --config configs/3d/C3D3_channel_ensemble_128.yaml --split val
-python scripts/predict_ens.py --config configs/3d/C3D3_channel_ensemble_128.yaml --split test
+# PHASE 2: Method-Specific Predictions (GPU)
+echo "=== PHASE 2: Method-Specific Predictions (GPU) ==="
+python scripts/generate_baseline_predictions.py --config configs/3d/C3D1_channel_baseline_128.yaml --split val --cuda
+python scripts/generate_baseline_predictions.py --config configs/3d/C3D1_channel_baseline_128.yaml --split test --cuda
+python scripts/predict_mc.py --config configs/3d/C3D2_channel_mc_dropout_128.yaml --split val --cuda
+python scripts/predict_mc.py --config configs/3d/C3D2_channel_mc_dropout_128.yaml --split test --cuda
+python scripts/predict_ens.py --config configs/3d/C3D3_channel_ensemble_128.yaml --split val --cuda
+python scripts/predict_ens.py --config configs/3d/C3D3_channel_ensemble_128.yaml --split test --cuda
 
-# PHASE 3: Calibration and Uncertainty Analysis
-echo "=== PHASE 3: Calibration Analysis ==="
-python scripts/calibrate_conformal.py --config configs/3d/C3D1_channel_baseline_128.yaml --mode scaled --base det
-python scripts/calibrate_conformal.py --config configs/3d/C3D2_channel_mc_dropout_128.yaml --mode scaled --base mc
-python scripts/calibrate_conformal.py --config configs/3d/C3D3_channel_ensemble_128.yaml --mode scaled --base ens
-python scripts/calibrate_conformal.py --config configs/3d/C3D4_channel_variational_128.yaml --mode scaled --base var
-python scripts/calibrate_conformal.py --config configs/3d/C3D5_channel_swag_128.yaml --mode scaled --base swag
-python scripts/calibrate_conformal.py --config configs/3d/C3D6_channel_physics_informed_128.yaml --mode scaled --base det
+# PHASE 3: Calibration and Uncertainty Analysis (GPU)
+echo "=== PHASE 3: Calibration Analysis (GPU) ==="
+python scripts/calibrate_conformal.py --config configs/3d/C3D1_channel_baseline_128.yaml --mode scaled --base det --cuda
+python scripts/calibrate_conformal.py --config configs/3d/C3D2_channel_mc_dropout_128.yaml --mode scaled --base mc --cuda
+python scripts/calibrate_conformal.py --config configs/3d/C3D3_channel_ensemble_128.yaml --mode scaled --base ens --cuda
+python scripts/calibrate_conformal.py --config configs/3d/C3D4_channel_variational_128.yaml --mode scaled --base var --cuda
+python scripts/calibrate_conformal.py --config configs/3d/C3D5_channel_swag_128.yaml --mode scaled --base swag --cuda
+python scripts/calibrate_conformal.py --config configs/3d/C3D6_channel_physics_informed_128.yaml --mode scaled --base det --cuda
 
-python scripts/run_uncertainty_calibration.py --config configs/3d/C3D1_channel_baseline_128.yaml
-python scripts/run_uncertainty_calibration.py --config configs/3d/C3D2_channel_mc_dropout_128.yaml
-python scripts/run_uncertainty_calibration.py --config configs/3d/C3D3_channel_ensemble_128.yaml
-python scripts/run_uncertainty_calibration.py --config configs/3d/C3D4_channel_variational_128.yaml
-python scripts/run_uncertainty_calibration.py --config configs/3d/C3D5_channel_swag_128.yaml
-python scripts/run_uncertainty_calibration.py --config configs/3d/C3D6_channel_physics_informed_128.yaml
+python scripts/run_uncertainty_calibration.py --config configs/3d/C3D1_channel_baseline_128.yaml --cuda
+python scripts/run_uncertainty_calibration.py --config configs/3d/C3D2_channel_mc_dropout_128.yaml --cuda
+python scripts/run_uncertainty_calibration.py --config configs/3d/C3D3_channel_ensemble_128.yaml --cuda
+python scripts/run_uncertainty_calibration.py --config configs/3d/C3D4_channel_variational_128.yaml --cuda
+python scripts/run_uncertainty_calibration.py --config configs/3d/C3D5_channel_swag_128.yaml --cuda
+python scripts/run_uncertainty_calibration.py --config configs/3d/C3D6_channel_physics_informed_128.yaml --cuda
 
 # PHASE 4: Robustness Analysis
 echo "=== PHASE 4: Robustness Analysis ==="
