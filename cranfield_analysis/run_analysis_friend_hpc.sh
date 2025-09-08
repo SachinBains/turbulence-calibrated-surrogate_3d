@@ -1,11 +1,20 @@
 #!/bin/bash
 # Complete analysis pipeline for friend's HPC (n63719vm)
-# Run this after setup_friend_hpc.sh and data transfer
+# Run this after setup_friend_hpc.sh and SELECTIVE data transfer
 
 export PYTHONPATH=/mnt/iusers01/fse-ugpgt01/mace01/n63719vm/turbulence-calibrated-surrogate_3d:$PYTHONPATH
 export ARTIFACTS_ROOT=/mnt/iusers01/fse-ugpgt01/mace01/n63719vm/artifacts_3d
 
 echo "Starting complete analysis pipeline on friend's HPC..."
+
+# PHASE 0: Verify Essential Files Only
+echo "=== PHASE 0: File Verification ==="
+echo "Checking for essential files (best_*.pth only)..."
+for exp in C3D1_channel_baseline_128 C3D2_channel_mc_dropout_128 C3D3_channel_ensemble_128 C3D4_channel_variational_128 C3D5_channel_swag_128 C3D6_channel_physics_informed_128; do
+    echo "Checking $exp..."
+    ls -la $ARTIFACTS_ROOT/results/$exp/best_*.pth 2>/dev/null || echo "  WARNING: No best_*.pth found for $exp"
+    ls -la $ARTIFACTS_ROOT/results/$exp/*_metrics.json 2>/dev/null || echo "  WARNING: No metrics found for $exp"
+done
 
 # PHASE 1: Generate Base Predictions
 echo "=== PHASE 1: Base Predictions ==="
