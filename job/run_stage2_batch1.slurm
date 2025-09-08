@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --time=0:45:00
+#SBATCH --time=0:40:00
 #SBATCH --output=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs/slurm/stage2_batch1_%j.out
 #SBATCH --error=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs/slurm/stage2_batch1_%j.err
 
@@ -30,7 +30,7 @@ python scripts/fix_ensemble_structure.py --artifacts_dir $ARTIFACTS_ROOT
 echo "=== Running C3D1 Baseline ==="
 if find $ARTIFACTS_ROOT/results/C3D1_channel_baseline_128 -name "*.pth" | head -1 | grep -q .; then
     echo "✓ C3D1: Checkpoint found"
-    python scripts/run_secondary_evaluation.py --config configs/3d_secondary/C3D1_secondary_5200.yaml --cuda
+    python scripts/run_secondary_evaluation.py --config configs/3d_secondary/C3D1_secondary_5200.yaml
     python scripts/validate_physics.py --config configs/3d_secondary/C3D1_secondary_5200.yaml --results_dir $ARTIFACTS_ROOT/results/C3D1_secondary_5200 --method mc
     echo "✓ C3D1 completed"
 else
@@ -41,7 +41,7 @@ fi
 echo "=== Running C3D2 MC Dropout ==="
 if find $ARTIFACTS_ROOT/results/C3D2_channel_mc_dropout_128 -name "*.pth" | head -1 | grep -q .; then
     echo "✓ C3D2: Checkpoint found"
-    python scripts/run_secondary_evaluation.py --config configs/3d_secondary/C3D2_secondary_5200.yaml --cuda
+    python scripts/run_secondary_evaluation.py --config configs/3d_secondary/C3D2_secondary_5200.yaml
     python scripts/validate_physics.py --config configs/3d_secondary/C3D2_secondary_5200.yaml --results_dir $ARTIFACTS_ROOT/results/C3D2_secondary_5200 --method mc
     echo "✓ C3D2 completed"
 else

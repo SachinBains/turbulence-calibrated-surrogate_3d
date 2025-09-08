@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --time=0:45:00
+#SBATCH --time=0:40:00
 #SBATCH --output=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs/slurm/stage2_batch2_%j.out
 #SBATCH --error=/mnt/iusers01/fse-ugpgt01/mace01/p78669sb/artifacts_3d/logs/slurm/stage2_batch2_%j.err
 
@@ -30,7 +30,7 @@ python scripts/fix_ensemble_structure.py --artifacts_dir $ARTIFACTS_ROOT
 echo "=== Running C3D3 Ensemble ==="
 if find $ARTIFACTS_ROOT/results/C3D3_channel_ensemble_128/members -name "*.pth" | head -1 | grep -q .; then
     echo "✓ C3D3: Ensemble members found"
-    python scripts/run_secondary_evaluation.py --config configs/3d_secondary/C3D3_secondary_5200.yaml --cuda
+    python scripts/run_secondary_evaluation.py --config configs/3d_secondary/C3D3_secondary_5200.yaml
     python scripts/validate_physics.py --config configs/3d_secondary/C3D3_secondary_5200.yaml --results_dir $ARTIFACTS_ROOT/results/C3D3_secondary_5200 --method ens
     echo "✓ C3D3 completed"
 else
@@ -41,7 +41,7 @@ fi
 echo "=== Running C3D6 Physics Informed ==="
 if find $ARTIFACTS_ROOT/results/C3D6_channel_physics_informed_128 -name "*.pth" | head -1 | grep -q .; then
     echo "✓ C3D6: Checkpoint found"
-    python scripts/run_secondary_evaluation.py --config configs/3d_secondary/C3D6_secondary_5200.yaml --cuda
+    python scripts/run_secondary_evaluation.py --config configs/3d_secondary/C3D6_secondary_5200.yaml
     python scripts/validate_physics.py --config configs/3d_secondary/C3D6_secondary_5200.yaml --results_dir $ARTIFACTS_ROOT/results/C3D6_secondary_5200 --method mc
     echo "✓ C3D6 completed"
 else
